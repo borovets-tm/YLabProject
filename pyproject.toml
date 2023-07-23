@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "ylabproject"
+version = "0.1.0"
+description = ""
+authors = ["Тимофей Боровец <t.m.borovets@icloud.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.100.0"
+uvicorn = "^0.23.1"
+sqlalchemy = "^2.0.19"
+psycopg2-binary = "^2.9.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
