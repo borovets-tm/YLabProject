@@ -30,9 +30,6 @@ def get_menu(menu_id: int, db: Session):
     dishes_count = db.query(models.Dish).filter(
         models.Dish.submenu_id.in_(submenus_id)
     ).count()
-    print(result.id)
-    print(list(submenus_id))
-    print(dishes_count)
     result = jsonable_encoder(result)
     result['id'] = str(result['id'])
     result['submenus_count'] = len(submenus_id)
