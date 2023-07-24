@@ -6,7 +6,7 @@ from menu_app.models import Dish
 from menu_app.schemas import DishCreate
 
 
-def get_dishes(db: Session):
+async def get_dishes(db: Session):
     result = db.query(Dish).all()
     result = jsonable_encoder(result)
     for obj in result:
@@ -15,7 +15,7 @@ def get_dishes(db: Session):
     return result
 
 
-def create_dish(submenu_id: int, data: DishCreate, db: Session):
+async def create_dish(submenu_id: int, data: DishCreate, db: Session):
     dish = Dish(
         title=data.title,
         description=data.description,
@@ -38,7 +38,7 @@ def create_dish(submenu_id: int, data: DishCreate, db: Session):
     return result
 
 
-def get_dish(dish_id: int, db: Session):
+async def get_dish(dish_id: int, db: Session):
     result = db.query(Dish).filter(
         Dish.id == dish_id
     ).first()
@@ -50,7 +50,7 @@ def get_dish(dish_id: int, db: Session):
     return result
 
 
-def update_dish(data: DishCreate, db: Session, dish_id: int):
+async def update_dish(data: DishCreate, db: Session, dish_id: int):
     dish = db.query(Dish).filter(
         Dish.id == dish_id
     ).first()
@@ -65,13 +65,6 @@ def update_dish(data: DishCreate, db: Session, dish_id: int):
     return dish
 
 
-def remove_dish(db: Session, dish_id: int):
+async def remove_dish(db: Session, dish_id: int):
     db.query(Dish).filter(Dish.id == dish_id).delete()
     db.commit()
-    response = jsonable_encoder(
-        {
-            "status": True,
-            "message": "The dish has been deleted"
-        }
-    )
-    return response

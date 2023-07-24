@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from menu_app import models, schemas
 
 
-def get_menus(db: Session):
+async def get_menus(db: Session):
     submenus = db.query(models.Submenu).all()
     dishes = db.query(models.Dish).all()
     result = db.query(models.Menu).all()
@@ -19,7 +19,7 @@ def get_menus(db: Session):
     return result
 
 
-def get_menu(menu_id: int, db: Session):
+async def get_menu(menu_id: int, db: Session):
     result = db.query(models.Menu).filter(models.Menu.id == menu_id).first()
     if not result:
         return None
@@ -37,7 +37,7 @@ def get_menu(menu_id: int, db: Session):
     return result
 
 
-def create_menu(data: schemas.MenuCreate, db: Session):
+async def create_menu(data: schemas.MenuCreate, db: Session):
     menu = models.Menu(title=data.title, description=data.description)
     try:
         db.add(menu)
@@ -52,7 +52,7 @@ def create_menu(data: schemas.MenuCreate, db: Session):
     return result
 
 
-def update_menu(data: schemas.MenuCreate, db: Session, menu_id: int):
+async def update_menu(data: schemas.MenuCreate, db: Session, menu_id: int):
     menu = db.query(models.Menu).filter(models.Menu.id == menu_id).first()
     menu.title = data.title
     menu.description = data.description
@@ -62,13 +62,6 @@ def update_menu(data: schemas.MenuCreate, db: Session, menu_id: int):
     return menu
 
 
-def remove_menu(db: Session, menu_id: int):
+async def remove_menu(db: Session, menu_id: int):
     db.query(models.Menu).filter(models.Menu.id == menu_id).delete()
     db.commit()
-    response = jsonable_encoder(
-        {
-            "status": True,
-            "message": "The menu has been deleted"
-        }
-    )
-    return response

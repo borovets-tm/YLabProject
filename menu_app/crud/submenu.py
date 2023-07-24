@@ -6,7 +6,7 @@ from menu_app.models import Submenu, Dish
 from menu_app.schemas import SubmenuCreate
 
 
-def get_submenus(db: Session):
+async def get_submenus(db: Session):
     result = db.query(Submenu).all()
     dishes = db.query(Dish).all()
     result = jsonable_encoder(result)
@@ -18,7 +18,7 @@ def get_submenus(db: Session):
     return result
 
 
-def create_submenu(menu_id: int, data: SubmenuCreate, db: Session):
+async def create_submenu(menu_id: int, data: SubmenuCreate, db: Session):
     submenu = Submenu(
         title=data.title,
         description=data.description,
@@ -39,7 +39,7 @@ def create_submenu(menu_id: int, data: SubmenuCreate, db: Session):
     return result
 
 
-def get_submenu(submenu_id: int, db: Session):
+async def get_submenu(submenu_id: int, db: Session):
     result = db.query(Submenu).filter(
         Submenu.id == submenu_id
     ).first()
@@ -54,7 +54,7 @@ def get_submenu(submenu_id: int, db: Session):
     return result
 
 
-def update_submenu(data: SubmenuCreate, db: Session, submenu_id: int):
+async def update_submenu(data: SubmenuCreate, db: Session, submenu_id: int):
     submenu = db.query(Submenu).filter(
         Submenu.id == submenu_id
     ).first()
@@ -66,13 +66,6 @@ def update_submenu(data: SubmenuCreate, db: Session, submenu_id: int):
     return submenu
 
 
-def remove_submenu(db: Session, submenu_id: int):
+async def remove_submenu(db: Session, submenu_id: int):
     db.query(Submenu).filter(Submenu.id == submenu_id).delete()
     db.commit()
-    response = jsonable_encoder(
-        {
-            "status": True,
-            "message": "The submenu has been deleted"
-        }
-    )
-    return response
