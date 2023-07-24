@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DECIMAL
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -64,7 +64,7 @@ class Dish(Base):
         nullable=True
     )
     price = Column(
-        String
+        DECIMAL
     )
     submenu_id = Column(
         Integer,

@@ -11,6 +11,7 @@ def get_dishes(db: Session):
     result = jsonable_encoder(result)
     for obj in result:
         obj['id'] = str(obj['id'])
+        obj['price'] = str(obj['price'])
     return result
 
 
@@ -33,6 +34,7 @@ def create_dish(submenu_id: int, data: DishCreate, db: Session):
         ).first()
     )
     result['id'] = str(result['id'])
+    result['price'] = str(result['price'])
     return result
 
 
@@ -44,6 +46,7 @@ def get_dish(dish_id: int, db: Session):
         return None
     result = jsonable_encoder(result)
     result['id'] = str(result['id'])
+    result['price'] = str(result['price'])
     return result
 
 
@@ -57,6 +60,8 @@ def update_dish(data: DishCreate, db: Session, dish_id: int):
     db.add(dish)
     db.commit()
     db.refresh(dish)
+    dish = jsonable_encoder(dish)
+    dish['price'] = str(dish['price'])
     return dish
 
 
