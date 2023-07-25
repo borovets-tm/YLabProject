@@ -64,7 +64,7 @@ class Dish(Base):
         nullable=True
     )
     price = Column(
-        DECIMAL
+        DECIMAL(precision=2)
     )
     submenu_id = Column(
         UUID,
