@@ -1,6 +1,5 @@
+from uuid import uuid4, UUID
 from sqlalchemy.orm import Session
-
-from fastapi.encoders import jsonable_encoder
 
 from menu_app.models import Dish
 from menu_app.schemas import DishCreate
@@ -8,15 +7,12 @@ from menu_app.schemas import DishCreate
 
 async def get_dishes(db: Session):
     result = db.query(Dish).all()
-    result = jsonable_encoder(result)
-    for obj in result:
-        obj['id'] = str(obj['id'])
-        obj['price'] = str(obj['price'])
     return result
 
 
-async def create_dish(submenu_id: int, data: DishCreate, db: Session):
+async def create_dish(submenu_id: UUID, data: DishCreate, db: Session):
     dish = Dish(
+        id=uuid4(),
         title=data.title,
         description=data.description,
         price=data.price,
@@ -28,29 +24,19 @@ async def create_dish(submenu_id: int, data: DishCreate, db: Session):
         db.refresh(dish)
     except Exception as e:
         print(e)
-    result = jsonable_encoder(
-        db.query(Dish).filter(
-            Dish.title == dish.title
-        ).first()
-    )
-    result['id'] = str(result['id'])
-    result['price'] = str(result['price'])
-    return result
+    return dish
 
 
-async def get_dish(dish_id: int, db: Session):
+async def get_dish(dish_id: UUID, db: Session):
     result = db.query(Dish).filter(
         Dish.id == dish_id
     ).first()
     if not result:
         return None
-    result = jsonable_encoder(result)
-    result['id'] = str(result['id'])
-    result['price'] = str(result['price'])
     return result
 
 
-async def update_dish(data: DishCreate, db: Session, dish_id: int):
+async def update_dish(data: DishCreate, db: Session, dish_id: UUID):
     dish = db.query(Dish).filter(
         Dish.id == dish_id
     ).first()
@@ -60,11 +46,9 @@ async def update_dish(data: DishCreate, db: Session, dish_id: int):
     db.add(dish)
     db.commit()
     db.refresh(dish)
-    dish = jsonable_encoder(dish)
-    dish['price'] = str(dish['price'])
     return dish
 
 
-async def remove_dish(db: Session, dish_id: int):
+async def remove_dish(db: Session, dish_id: UUID):
     db.query(Dish).filter(Dish.id == dish_id).delete()
     db.commit()

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DECIMAL
+from sqlalchemy import Column, ForeignKey, String, DECIMAL, UUID
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -7,7 +7,7 @@ from .database import Base
 class Menu(Base):
     __tablename__ = 'menus'
     id = Column(
-        Integer,
+        UUID,
         primary_key=True,
         index=True
     )
@@ -26,7 +26,7 @@ class Menu(Base):
 class Submenu(Base):
     __tablename__ = 'submenus'
     id = Column(
-        Integer,
+        UUID,
         primary_key=True,
         index=True
     )
@@ -40,7 +40,7 @@ class Submenu(Base):
         nullable=True
     )
     menu_id = Column(
-        Integer,
+        UUID,
         ForeignKey('menus.id', ondelete='CASCADE')
     )
     menu = relationship('Menu', back_populates='submenus')
@@ -50,7 +50,7 @@ class Submenu(Base):
 class Dish(Base):
     __tablename__ = 'dishes'
     id = Column(
-        Integer,
+        UUID,
         primary_key=True,
         index=True
     )
@@ -67,7 +67,7 @@ class Dish(Base):
         DECIMAL
     )
     submenu_id = Column(
-        Integer,
+        UUID,
         ForeignKey('submenus.id', ondelete='CASCADE'),
     )
     submenu = relationship('Submenu', back_populates='dishes')

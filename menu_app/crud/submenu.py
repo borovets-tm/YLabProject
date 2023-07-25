@@ -1,6 +1,5 @@
+from uuid import uuid4, UUID
 from sqlalchemy.orm import Session
-
-from fastapi.encoders import jsonable_encoder
 
 from menu_app.models import Submenu, Dish
 from menu_app.schemas import SubmenuCreate
@@ -9,17 +8,16 @@ from menu_app.schemas import SubmenuCreate
 async def get_submenus(db: Session):
     result = db.query(Submenu).all()
     dishes = db.query(Dish).all()
-    result = jsonable_encoder(result)
     for obj in result:
-        obj['id'] = str(obj['id'])
-        obj['dishes_count'] = len(
+        obj.dishes_count = len(
             [i for i in dishes if i.submenu_id == obj.id]
         )
     return result
 
 
-async def create_submenu(menu_id: int, data: SubmenuCreate, db: Session):
+async def create_submenu(menu_id: UUID, data: SubmenuCreate, db: Session):
     submenu = Submenu(
+        id=uuid4(),
         title=data.title,
         description=data.description,
         menu_id=menu_id
@@ -30,16 +28,10 @@ async def create_submenu(menu_id: int, data: SubmenuCreate, db: Session):
         db.refresh(submenu)
     except Exception as e:
         print(e)
-    result = jsonable_encoder(
-        db.query(Submenu).filter(
-            Submenu.title == submenu.title
-        ).first()
-    )
-    result['id'] = str(result['id'])
-    return result
+    return submenu
 
 
-async def get_submenu(submenu_id: int, db: Session):
+async def get_submenu(submenu_id: UUID, db: Session):
     result = db.query(Submenu).filter(
         Submenu.id == submenu_id
     ).first()
@@ -48,13 +40,11 @@ async def get_submenu(submenu_id: int, db: Session):
     dishes_count = db.query(Dish).filter(
         Dish.submenu_id == submenu_id
     ).count()
-    result = jsonable_encoder(result)
-    result['id'] = str(result['id'])
-    result['dishes_count'] = dishes_count
+    result.dishes_count = dishes_count
     return result
 
 
-async def update_submenu(data: SubmenuCreate, db: Session, submenu_id: int):
+async def update_submenu(data: SubmenuCreate, db: Session, submenu_id: UUID):
     submenu = db.query(Submenu).filter(
         Submenu.id == submenu_id
     ).first()
@@ -66,6 +56,6 @@ async def update_submenu(data: SubmenuCreate, db: Session, submenu_id: int):
     return submenu
 
 
-async def remove_submenu(db: Session, submenu_id: int):
+async def remove_submenu(db: Session, submenu_id: UUID):
     db.query(Submenu).filter(Submenu.id == submenu_id).delete()
     db.commit()

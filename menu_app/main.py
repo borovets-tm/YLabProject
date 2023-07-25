@@ -1,4 +1,11 @@
-from fastapi import Depends, FastAPI, APIRouter, HTTPException
+from uuid import UUID
+
+from fastapi import (
+    Depends,
+    FastAPI,
+    APIRouter,
+    HTTPException,
+)
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
@@ -39,7 +46,7 @@ async def get_menus(db: Session = Depends(get_db)) -> JSONResponse:
     response_model=schemas.Menu
 )
 async def create_menu(
-        data: schemas.MenuCreate = None,
+        data: schemas.MenuCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_menu.create_menu(data=data, db=db)
@@ -47,7 +54,7 @@ async def create_menu(
 
 @menu_routers.get('/{menu_id}/', tags=['menus'], response_model=schemas.Menu)
 async def get_menu(
-        menu_id: int = None,
+        menu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     menu = await crud_menu.get_menu(menu_id=menu_id, db=db)
@@ -62,8 +69,8 @@ async def get_menu(
     response_model=schemas.MenuCreate
 )
 async def update_menu(
-        menu_id: int = None,
-        data: schemas.MenuCreate = None,
+        menu_id: UUID,
+        data: schemas.MenuCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_menu.update_menu(data=data, menu_id=menu_id, db=db)
@@ -71,13 +78,13 @@ async def update_menu(
 
 @menu_routers.delete('/{menu_id}/', tags=['menus'])
 async def delete_menu(
-        menu_id: int = None,
+        menu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     await crud_menu.remove_menu(menu_id=menu_id, db=db)
     return JSONResponse(
-        {
-            "status": True,
+        status_code=200,
+        content={
             "message": "The menu has been deleted"
         }
     )
@@ -99,8 +106,8 @@ async def get_submenus(db: Session = Depends(get_db)) -> JSONResponse:
     response_model=schemas.Submenu
 )
 async def create_submenu(
-        menu_id: int = None,
-        data: schemas.SubmenuCreate = None,
+        menu_id: UUID,
+        data: schemas.SubmenuCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_submenu.create_submenu(menu_id=menu_id, data=data, db=db)
@@ -112,7 +119,7 @@ async def create_submenu(
     response_model=schemas.Submenu
 )
 async def get_submenu(
-        submenu_id: int = None,
+        submenu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     submenu = await crud_submenu.get_submenu(submenu_id=submenu_id, db=db)
@@ -127,8 +134,8 @@ async def get_submenu(
     response_model=schemas.SubmenuCreate
 )
 async def update_submenu(
-        submenu_id: int = None,
-        data: schemas.SubmenuCreate = None,
+        submenu_id: UUID,
+        data: schemas.SubmenuCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_submenu.update_submenu(
@@ -140,13 +147,13 @@ async def update_submenu(
 
 @submenu_routers.delete('/{submenu_id}/', tags=['submenus'])
 async def delete_submenu(
-        submenu_id: int = None,
+        submenu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     await crud_submenu.remove_submenu(submenu_id=submenu_id, db=db)
     return JSONResponse(
-        {
-            "status": True,
+        status_code=200,
+        content={
             "message": "The submenu has been deleted"
         }
     )
@@ -164,8 +171,8 @@ async def get_dishes(db: Session = Depends(get_db)) -> JSONResponse:
     response_model=schemas.Dish
 )
 async def create_dish(
-        submenu_id: int = None,
-        data: schemas.DishCreate = None,
+        submenu_id: UUID,
+        data: schemas.DishCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_dish.create_dish(submenu_id=submenu_id, data=data, db=db)
@@ -173,7 +180,7 @@ async def create_dish(
 
 @dish_routers.get('/{dish_id}/', tags=['dishes'], response_model=schemas.Dish)
 async def get_dish(
-        dish_id: int = None,
+        dish_id: UUID,
         db: Session = Depends(get_db),
 ) -> JSONResponse:
     dish = await crud_dish.get_dish(dish_id=dish_id, db=db)
@@ -188,8 +195,8 @@ async def get_dish(
     response_model=schemas.DishCreate
 )
 async def update_dish(
-        dish_id: int = None,
-        data: schemas.DishCreate = None,
+        dish_id: UUID,
+        data: schemas.DishCreate,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     return await crud_dish.update_dish(data=data, dish_id=dish_id, db=db)
@@ -197,14 +204,14 @@ async def update_dish(
 
 @dish_routers.delete('/{dish_id}/', tags=['dishes'])
 async def delete_dish(
-        dish_id: int = None,
-        db: Session = Depends(get_db)
+        dish_id: UUID,
+        db: Session = Depends(get_db),
 ) -> JSONResponse:
     await crud_dish.remove_dish(dish_id=dish_id, db=db)
     return JSONResponse(
-        {
-            "status": True,
-            "message": "The dish has been deleted"
+        status_code=200,
+        content={
+            'message': 'The dish has been deleted'
         }
     )
 
