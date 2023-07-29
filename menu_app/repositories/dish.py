@@ -2,7 +2,7 @@ from uuid import uuid4, UUID
 from sqlalchemy.orm import Session
 
 from menu_app.models import Dish
-from menu_app.schemas import DishCreate
+from menu_app.schemas.dish import DishCreate
 
 
 async def get_dishes(db: Session):
@@ -28,9 +28,12 @@ async def create_dish(submenu_id: UUID, data: DishCreate, db: Session):
 
 
 async def get_dish(dish_id: UUID, db: Session):
-    result = db.query(Dish).filter(
-        Dish.id == dish_id
-    ).first()
+    result = (
+        db
+        .query(Dish)
+        .filter(Dish.id == dish_id)
+        .first()
+    )
     if not result:
         return None
     return result

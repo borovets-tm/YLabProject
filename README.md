@@ -85,7 +85,7 @@
    ```  
 6. Запустите сборку образа и запуск контейнера Docker:  
     ```shell
-   docker compose up --build
+   docker-compose up -d
    ```
 
 #### После данных манипуляций приложение будет доступно по адресу [localhost:8000](http://localhost:8000/docs) или [127.0.0.1:8000](http://127.0.0.1:8000/docs)

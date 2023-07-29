@@ -1,17 +1,29 @@
 from uuid import uuid4, UUID
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from menu_app.models import Submenu, Dish
-from menu_app.schemas import SubmenuCreate
+from menu_app.models import Submenu
+from menu_app.schemas.submenu import SubmenuCreate
+
+
+fields: tuple = ('id', 'title', 'description', 'dishes_count')
 
 
 async def get_submenus(db: Session):
-    result = db.query(Submenu).all()
-    dishes = db.query(Dish).all()
-    for obj in result:
-        obj.dishes_count = len(
-            [i for i in dishes if i.submenu_id == obj.id]
+    result = (
+        db
+        .query(
+            Submenu.id,
+            Submenu.title,
+            Submenu.description,
+            func.count(Submenu.dishes).label('dishes_count')
         )
+        .join(Submenu.dishes, isouter=True)
+        .group_by(Submenu.id)
+        .all()
+    )
+    result = [dict(zip(fields, data)) for data in result]
     return result
 
 
@@ -32,15 +44,22 @@ async def create_submenu(menu_id: UUID, data: SubmenuCreate, db: Session):
 
 
 async def get_submenu(submenu_id: UUID, db: Session):
-    result = db.query(Submenu).filter(
-        Submenu.id == submenu_id
-    ).first()
+    result = (
+        db
+        .query(
+            Submenu.id,
+            Submenu.title,
+            Submenu.description,
+            func.count(Submenu.dishes).label('dishes_count')
+        )
+        .join(Submenu.dishes, isouter=True)
+        .filter(Submenu.id == submenu_id)
+        .group_by(Submenu.id)
+        .first()
+    )
     if not result:
         return None
-    dishes_count = db.query(Dish).filter(
-        Dish.submenu_id == submenu_id
-    ).count()
-    result.dishes_count = dishes_count
+    result = dict(zip(fields, result))
     return result
 
 
