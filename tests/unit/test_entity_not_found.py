@@ -8,24 +8,20 @@ from .config import (
 )
 
 
-@pytest.mark.order(2)
+@pytest.mark.order(5)
 class TestGroup:
 
     @pytest.mark.asyncio
-    async def test_menu_get(self):
+    async def test_menu_get_not_found(self):
         menu_id = await get_entity_id('menu_id')
         response = client.get(menu_other_prefix % {'menu_id': menu_id})
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert response.json() == {
-            'id': menu_id,
-            'title': 'Test menu 1',
-            'description': 'Description test menu 1',
-            'submenus_count': 1,
-            'dishes_count': 1
+            'detail': 'menu not found'
         }
 
     @pytest.mark.asyncio
-    async def test_submenu_get(self):
+    async def test_submenu_get_not_found(self):
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(
@@ -34,16 +30,13 @@ class TestGroup:
                 'submenu_id': submenu_id
             }
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert response.json() == {
-            'id': submenu_id,
-            'title': 'Test submenu 1',
-            'description': 'Description test submenu 1',
-            'dishes_count': 1
+            'detail': 'submenu not found'
         }
 
     @pytest.mark.asyncio
-    async def test_dish_get(self):
+    async def test_dish_get_not_found(self):
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         dish_id = await get_entity_id('dish_id')
@@ -54,10 +47,7 @@ class TestGroup:
                 'dish_id': dish_id
             }
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
         assert response.json() == {
-            'id': dish_id,
-            'title': 'Test dish 1',
-            'description': 'Description test dish 1',
-            'price': '12.50'
+            'detail': 'dish not found'
         }
