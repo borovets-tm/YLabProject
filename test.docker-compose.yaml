@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15.1-alpine
+    logging:
+      driver: "none"
+    container_name: db
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    restart: always
+  test:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: test
+    env_file:
+      - .env
+    external_links:
+      - db:db
+    ports:
+      - "8000:8000"
+    command:
+      - pytest
+      - tests/unit
+      - -v
+      - -s

@@ -1,4 +1,3 @@
-import uvicorn
 from fastapi import FastAPI, APIRouter
 from .services import (
     submenu,
@@ -8,11 +7,6 @@ from .services import (
 
 app = FastAPI()
 router = APIRouter(prefix='/api/v1')
-
-
-@router.get('/healthchecker/')
-async def root():
-    return {"message": "The API is LIVE!!"}
 
 
 submenu.routers.include_router(dish.routers)
