@@ -19,7 +19,7 @@ class TestGroup:
         assert response.json() == []
 
     @pytest.mark.asyncio
-    async def test_get_submenus(self):
+    async def test_get_empty_submenus_list(self):
         menu_id = await get_entity_id('menu_id')
         response = client.get(
             submenu_post_list_prefix % {
@@ -30,7 +30,7 @@ class TestGroup:
         assert response.json() == []
 
     @pytest.mark.asyncio
-    async def test_get_dishes(self):
+    async def test_get_empty_dishes_list(self):
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(

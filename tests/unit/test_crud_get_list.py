@@ -12,7 +12,7 @@ from .test_config import (
 class TestGroup:
 
     @pytest.mark.asyncio
-    async def test_menu_get_list(self):
+    async def test_menus(self):
         menu_id = await get_entity_id('menu_id')
         response = client.get(menu_post_list_prefix)
         assert response.status_code == 200
@@ -27,7 +27,7 @@ class TestGroup:
         ]
 
     @pytest.mark.asyncio
-    async def test_submenu_get(self):
+    async def test_submenus(self):
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(
@@ -46,7 +46,7 @@ class TestGroup:
         ]
 
     @pytest.mark.asyncio
-    async def test_dish_get(self):
+    async def test_dishes(self):
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         dish_id = await get_entity_id('dish_id')
