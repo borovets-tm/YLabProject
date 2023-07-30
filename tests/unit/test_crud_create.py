@@ -1,11 +1,11 @@
 import pytest
-from .config import (
+from .test_config import (
     client,
     set_entity_id,
     get_entity_id,
-    dish_post_prefix,
-    menu_post_prefix,
-    submenu_post_prefix
+    dish_post_list_prefix,
+    menu_post_list_prefix,
+    submenu_post_list_prefix
 )
 
 
@@ -17,7 +17,7 @@ class TestGroup:
             'title': 'Test menu 1',
             'description': 'Description test menu 1'
         }
-        response = client.post(menu_post_prefix, json=test_entity)
+        response = client.post(menu_post_list_prefix, json=test_entity)
         assert response.status_code == 201
         data = response.json()
         menu_id = data['id']
@@ -39,7 +39,7 @@ class TestGroup:
             'menu_id': menu_id
         }
         response = client.post(
-            submenu_post_prefix % {'menu_id': menu_id},
+            submenu_post_list_prefix % {'menu_id': menu_id},
             json=test_entity
         )
         data = response.json()
@@ -64,7 +64,7 @@ class TestGroup:
                 'submenu_id': submenu_id
             }
         response = client.post(
-            dish_post_prefix % {
+            dish_post_list_prefix % {
                 'menu_id': menu_id,
                 'submenu_id': submenu_id
             },

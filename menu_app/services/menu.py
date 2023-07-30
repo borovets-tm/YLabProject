@@ -68,6 +68,6 @@ async def delete_menu(
     return JSONResponse(
         status_code=200,
         content={
-            "message": "The menu has been deleted"
+            'message': 'The menu has been deleted'
         }
     )

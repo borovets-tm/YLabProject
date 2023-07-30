@@ -81,6 +81,6 @@ async def delete_submenu(
     return JSONResponse(
         status_code=200,
         content={
-            "message": "The submenu has been deleted"
+            'message': 'The submenu has been deleted'
         }
     )

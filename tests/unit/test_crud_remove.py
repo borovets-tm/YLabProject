@@ -1,6 +1,6 @@
 import pytest
 
-from .config import (
+from .test_config import (
     client,
     get_entity_id,
     dish_other_prefix,
@@ -9,7 +9,7 @@ from .config import (
 )
 
 
-@pytest.mark.order(4)
+@pytest.mark.order(5)
 class TestGroup:
     @pytest.mark.asyncio
     async def test_dish_remove(self):

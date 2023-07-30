@@ -1,5 +1,5 @@
 import pytest
-from .config import (
+from .test_config import (
     client,
     get_entity_id,
     submenu_other_prefix,
@@ -8,7 +8,7 @@ from .config import (
 )
 
 
-@pytest.mark.order(3)
+@pytest.mark.order(4)
 class TestGroup:
     @pytest.mark.asyncio
     async def test_menu_patch(self):

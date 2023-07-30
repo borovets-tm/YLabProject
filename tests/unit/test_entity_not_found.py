@@ -1,5 +1,5 @@
 import pytest
-from .config import (
+from .test_config import (
     client,
     get_entity_id,
     menu_other_prefix,
@@ -8,7 +8,7 @@ from .config import (
 )
 
 
-@pytest.mark.order(5)
+@pytest.mark.order(6)
 class TestGroup:
 
     @pytest.mark.asyncio
