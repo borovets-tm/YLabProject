@@ -1,21 +1,17 @@
+import aioredis
 import pytest
 from .config import (
     client,
-    load_data,
+    get_entity_id,
     menu_other_prefix,
     submenu_other_prefix,
     dish_other_prefix,
 )
 
 
-test_id: dict = {}
-
-
 @pytest.mark.asyncio
 async def test_menu_get():
-    global test_id
-    test_id = load_data()
-    menu_id = test_id['menu_id']
+    menu_id = await get_entity_id('menu_id')
     response = client.get(menu_other_prefix % {'menu_id': menu_id})
     assert response.status_code == 200
     assert response.json() == {
@@ -29,8 +25,8 @@ async def test_menu_get():
 
 @pytest.mark.asyncio
 async def test_submenu_get():
-    menu_id = test_id['menu_id']
-    submenu_id = test_id['submenu_id']
+    menu_id = await get_entity_id('menu_id')
+    submenu_id = await get_entity_id('submenu_id')
     response = client.get(
         submenu_other_prefix % {
             'menu_id': menu_id,
@@ -48,9 +44,9 @@ async def test_submenu_get():
 
 @pytest.mark.asyncio
 async def test_dish_get():
-    menu_id = test_id['menu_id']
-    submenu_id = test_id['submenu_id']
-    dish_id = test_id['dish_id']
+    menu_id = await get_entity_id('menu_id')
+    submenu_id = await get_entity_id('submenu_id')
+    dish_id = await get_entity_id('dish_id')
     response = client.get(
         dish_other_prefix % {
             'menu_id': menu_id,

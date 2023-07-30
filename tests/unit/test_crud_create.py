@@ -1,14 +1,12 @@
 import pytest
 from .config import (
     client,
+    set_entity_id,
+    get_entity_id,
     dish_post_prefix,
     menu_post_prefix,
-    submenu_post_prefix,
-    dump_data,
+    submenu_post_prefix
 )
-
-
-test_id: dict = {}
 
 
 @pytest.mark.asyncio
@@ -20,10 +18,10 @@ async def test_menu_create():
     response = client.post(menu_post_prefix, json=test_entity)
     assert response.status_code == 201
     data = response.json()
-    global test_id
-    test_id['menu_id'] = data['id']
+    menu_id = data['id']
+    await set_entity_id('menu_id', menu_id)
     assert data == {
-        'id': test_id['menu_id'],
+        'id': menu_id,
         'title': 'Test menu 1',
         'description': 'Description test menu 1',
         'submenus_count': 0,
@@ -33,8 +31,7 @@ async def test_menu_create():
 
 @pytest.mark.asyncio
 async def test_submenu_create():
-    global test_id
-    menu_id = test_id['menu_id']
+    menu_id = await get_entity_id('menu_id')
     test_entity = {
         'title': 'Test submenu 1',
         'description': 'Description test submenu 1',
@@ -45,10 +42,11 @@ async def test_submenu_create():
         json=test_entity
     )
     data = response.json()
-    test_id['submenu_id'] = data['id']
+    submenu_id = data['id']
+    await set_entity_id('submenu_id', submenu_id)
     assert response.status_code == 201
     assert data == {
-        'id': test_id['submenu_id'],
+        'id': submenu_id,
         'title': 'Test submenu 1',
         'description': 'Description test submenu 1',
         'dishes_count': 0
@@ -57,9 +55,8 @@ async def test_submenu_create():
 
 @pytest.mark.asyncio
 async def test_dish_create():
-    global test_id
-    menu_id = test_id['menu_id']
-    submenu_id = test_id['submenu_id']
+    menu_id = await get_entity_id('menu_id')
+    submenu_id = await get_entity_id('submenu_id')
     test_entity = {
             'title': 'Test dish 1',
             'description': 'Description test dish 1',
@@ -74,12 +71,12 @@ async def test_dish_create():
         json=test_entity
     )
     data = response.json()
-    test_id['dish_id'] = data['id']
+    dish_id = data['id']
+    await set_entity_id('dish_id', dish_id)
     assert response.status_code == 201
     assert data == {
-        'id': test_id['dish_id'],
+        'id': dish_id,
         'title': 'Test dish 1',
         'description': 'Description test dish 1',
         'price': '12.50'
     }
-    dump_data(test_id)

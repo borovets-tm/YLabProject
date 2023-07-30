@@ -1,18 +1,17 @@
+import aioredis
 import pytest
 from .config import (
     client,
+    get_entity_id,
     submenu_other_prefix,
-    load_data, menu_other_prefix, dish_other_prefix,
+    menu_other_prefix,
+    dish_other_prefix,
 )
-
-test_id: dict = {}
 
 
 @pytest.mark.asyncio
-async def test_menu_update():
-    global test_id
-    test_id = load_data()
-    menu_id = test_id['menu_id']
+async def test_menu_patch():
+    menu_id = await get_entity_id('menu_id')
     test_update_entity = {
         'title': 'Updated test menu 1',
         'description': 'Updated description test menu 1'
@@ -29,9 +28,9 @@ async def test_menu_update():
 
 
 @pytest.mark.asyncio
-async def test_submenu_update():
-    menu_id = test_id['menu_id']
-    submenu_id = test_id['submenu_id']
+async def test_submenu_patch():
+    menu_id = await get_entity_id('menu_id')
+    submenu_id = await get_entity_id('submenu_id')
     test_update_entity = {
         'title': 'Updated test submenu 1',
         'description': 'Updated description test submenu 1'
@@ -51,10 +50,10 @@ async def test_submenu_update():
 
 
 @pytest.mark.asyncio
-async def test_dish_update():
-    menu_id = test_id['menu_id']
-    submenu_id = test_id['submenu_id']
-    dish_id = test_id['dish_id']
+async def test_dish_patch():
+    menu_id = await get_entity_id('menu_id')
+    submenu_id = await get_entity_id('submenu_id')
+    dish_id = await get_entity_id('dish_id')
     test_update_entity = {
         'title': 'Updated test dish 1',
         'description': 'Updated description test dish 1',
