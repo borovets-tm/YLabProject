@@ -1,5 +1,5 @@
 """Модуль со списком схем данных модели Submenu."""
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4, BaseModel
 
 
 class SubmenuBase(BaseModel):

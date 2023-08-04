@@ -1,7 +1,6 @@
 """Модуль реализует функционал запросов к базе данных модели Submenu по\
 CRUD."""
-from typing import List
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException
 from sqlalchemy import func
@@ -10,6 +9,7 @@ from starlette.responses import JSONResponse
 
 from menu_app.models import Submenu
 from menu_app.schemas.submenu import SubmenuCreate
+
 from .config import data_commit, get_entity, remove_entity
 
 
@@ -21,7 +21,7 @@ class SubmenuRepository:
         """Инициализация класса с указанием используемой модели."""
         self.model = Submenu
 
-    async def get_list(self, db: Session) -> List[Submenu]:
+    async def get_list(self, db: Session) -> list[Submenu]:
         """
         Метод получения списка подменю.
 

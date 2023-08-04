@@ -1,6 +1,5 @@
 """Модуль реализует функционал запросов к базе данных модели Dish по CRUD."""
-from typing import List
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -8,7 +7,8 @@ from starlette.responses import JSONResponse
 
 from menu_app.models import Dish
 from menu_app.schemas.dish import DishCreate
-from .config import remove_entity, data_commit, get_entity
+
+from .config import data_commit, get_entity, remove_entity
 
 
 class DishRepository:
@@ -18,7 +18,7 @@ class DishRepository:
         """Инициализация класса с указанием используемой модели."""
         self.model = Dish
 
-    async def get_list(self, db: Session) -> List[Dish]:
+    async def get_list(self, db: Session) -> list[Dish]:
         """
         Метод получения списка блюд.
 

@@ -1,11 +1,12 @@
 import pytest
+
 from .test_config import (
     client,
-    set_entity_id,
-    get_entity_id,
     dish_post_list_prefix,
+    get_entity_id,
     menu_post_list_prefix,
-    submenu_post_list_prefix
+    set_entity_id,
+    submenu_post_list_prefix,
 )
 
 
@@ -58,11 +59,11 @@ class TestGroup:
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         test_entity = {
-                'title': 'Test dish 1',
-                'description': 'Description test dish 1',
-                'price': '12.50',
-                'submenu_id': submenu_id
-            }
+            'title': 'Test dish 1',
+            'description': 'Description test dish 1',
+            'price': '12.50',
+            'submenu_id': submenu_id
+        }
         response = client.post(
             dish_post_list_prefix % {
                 'menu_id': menu_id,

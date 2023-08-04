@@ -5,6 +5,7 @@ import aioredis
 import pytest
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
+
 from menu_app.main import app
 
 client = TestClient(app=app)
@@ -41,7 +42,7 @@ async def get_entity_id(key: str) -> UUID:
 @pytest.mark.asyncio
 async def test_clear_cache_after_test():
     redis = await aioredis.from_url(url_redis)
-    await redis.flushdb(asynchronous=True)
+    await redis.flushall(asynchronous=True)
     keys = await redis.keys()
     await redis.connection_pool.disconnect()
     assert keys == []

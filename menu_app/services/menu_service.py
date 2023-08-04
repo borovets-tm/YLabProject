@@ -1,23 +1,23 @@
 """Модуль сервисного слоя для модели Menu."""
-from typing import List
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from menu_app.schemas.menu import MenuCreate, Menu
-from menu_app.repositories.menu_repository import repository, MenuRepository
-from .config import set_cache, get_cache, delete_cache, flush_redis
+from menu_app.repositories.menu_repository import MenuRepository, repository
+from menu_app.schemas.menu import Menu, MenuCreate
+
+from .config import delete_cache, flush_redis, get_cache, set_cache
 
 
 class MenuService:
     """Модель сервисных методов для меню."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
         self.repository: MenuRepository = repository
 
-    async def get_list(self, db: Session) -> List[Menu]:
+    async def get_list(self, db: Session) -> list[Menu]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\

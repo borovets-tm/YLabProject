@@ -1,10 +1,11 @@
 import pytest
+
 from .test_config import (
     client,
+    dish_post_list_prefix,
     get_entity_id,
     menu_post_list_prefix,
     submenu_post_list_prefix,
-    dish_post_list_prefix,
 )
 
 

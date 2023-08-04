@@ -1,11 +1,10 @@
 """Модуль используется для инициализации методов кэширования в слое."""
 import pickle
 from os import getenv
-from typing import Any, List
+from typing import Any
 
 import aioredis
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -42,7 +41,7 @@ async def get_cache(request: str) -> Any:
     return cache
 
 
-async def delete_cache(request: List[str]) -> None:
+async def delete_cache(request: list[str]) -> None:
     """
     Функция удаляет записи кэша всех передаваемых ключей.
 

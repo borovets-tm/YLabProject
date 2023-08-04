@@ -1,13 +1,12 @@
 """Модуль с роутерами для модели Dish."""
-from typing import List
 from uuid import UUID
 
-from fastapi import Depends, APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.dish import DishCreate, Dish
+from menu_app.schemas.dish import Dish, DishCreate
 from menu_app.services.dish_service import service
 
 routers = APIRouter(prefix='/{submenu_id}/dishes')
@@ -17,9 +16,9 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
     '/',
     tags=['dishes'],
     summary='Получаем список блюд',
-    response_model=List[Dish]
+    response_model=list[Dish]
 )
-async def get_list(db: Session = Depends(get_db)) -> List[Dish]:
+async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
     """
     Функция получает из слоя service информацию о списке блюд и передает ее в\
     качестве ответа на get-запрос.

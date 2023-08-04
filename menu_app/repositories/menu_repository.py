@@ -1,6 +1,5 @@
 """Модуль реализует функционал запросов к базе данных модели Menu по CRUD."""
-from typing import List, Union
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException
 from sqlalchemy import func
@@ -8,10 +7,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import coalesce
 from starlette.responses import JSONResponse
 
+from menu_app.models import Dish, Menu, Submenu
 from menu_app.schemas.menu import MenuCreate
-from menu_app.models import Menu
-from menu_app.models import Submenu
-from menu_app.models import Dish
+
 from .config import data_commit, get_entity, remove_entity
 
 
@@ -22,7 +20,7 @@ class MenuRepository:
         """Инициализация класса с указанием используемой модели."""
         self.model = Menu
 
-    async def get_list(self, db: Session) -> List[Menu]:
+    async def get_list(self, db: Session) -> list[Menu]:
         """
         Метод получения списка меню.
 
@@ -138,7 +136,7 @@ class MenuRepository:
             self,
             db: Session,
             menu_id: UUID
-    ) -> Union[JSONResponse, HTTPException]:
+    ) -> JSONResponse | HTTPException:
         """
         Метод удаляет меню из базы данных.
 

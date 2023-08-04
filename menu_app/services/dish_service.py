@@ -1,26 +1,23 @@
 """Модуль сервисного слоя для модели Dish."""
-from typing import List
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from menu_app.schemas.dish import DishCreate, Dish
-from menu_app.repositories.dish_repository import (
-    repository,
-    DishRepository
-)
-from .config import set_cache, get_cache, delete_cache, flush_redis
+from menu_app.repositories.dish_repository import DishRepository, repository
+from menu_app.schemas.dish import Dish, DishCreate
+
+from .config import delete_cache, flush_redis, get_cache, set_cache
 
 
 class DishService:
     """Модель сервисных методов для блюд."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
         self.repository: DishRepository = repository
 
-    async def get_list(self, db: Session) -> List[Dish]:
+    async def get_list(self, db: Session) -> list[Dish]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\

@@ -1,26 +1,23 @@
 """Модуль сервисного слоя для модели Submenu."""
-from typing import List
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from menu_app.schemas.submenu import SubmenuCreate, Submenu
-from menu_app.repositories.submenu_repository import (
-    repository,
-    SubmenuRepository
-)
-from .config import set_cache, get_cache, delete_cache, flush_redis
+from menu_app.repositories.submenu_repository import SubmenuRepository, repository
+from menu_app.schemas.submenu import Submenu, SubmenuCreate
+
+from .config import delete_cache, flush_redis, get_cache, set_cache
 
 
 class SubmenuService:
     """Модель сервисных методов для подменю."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
         self.repository: SubmenuRepository = repository
 
-    async def get_list(self, db: Session) -> List[Submenu]:
+    async def get_list(self, db: Session) -> list[Submenu]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\

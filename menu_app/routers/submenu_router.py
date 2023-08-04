@@ -1,28 +1,24 @@
 """Модуль с роутерами для модели Submenu."""
-from typing import List
 from uuid import UUID
 
-from fastapi import (
-    Depends,
-    APIRouter,
-)
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.submenu import SubmenuCreate, Submenu
+from menu_app.schemas.submenu import Submenu, SubmenuCreate
 from menu_app.services.submenu_service import service
 
 routers = APIRouter(prefix='/{menu_id}/submenus')
 
 
 @routers.get(
-    "/",
+    '/',
     summary='Получаем список подменю',
     tags=['submenus'],
     response_model=list[Submenu]
 )
-async def get_list(db: Session = Depends(get_db)) -> List[Submenu]:
+async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
     """
     Функция получает из слоя service информацию о списке подменю и передает ее\
     в качестве ответа на get-запрос.

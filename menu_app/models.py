@@ -1,10 +1,9 @@
 """Модуль инициализации моделей, используемых в приложении."""
 import decimal
 import uuid
-from typing import List
 
-from sqlalchemy import Column, String, UUID, ForeignKey, Numeric
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy import UUID, Column, ForeignKey, Numeric, String
+from sqlalchemy.orm import Mapped, relationship
 
 from menu_app.database import Base, engine
 
@@ -28,7 +27,7 @@ class Menu(Base):
         String,
         nullable=True,
     )
-    submenus: Mapped[List['Submenu']] = relationship(
+    submenus: Mapped[list['Submenu']] = relationship(
         'Submenu',
         back_populates='menu'
     )
@@ -57,11 +56,11 @@ class Submenu(Base):
         UUID,
         ForeignKey('menus.id', ondelete='CASCADE')
     )
-    menu: Mapped[List['Menu']] = relationship(
+    menu: Mapped[list['Menu']] = relationship(
         'Menu',
         back_populates='submenus'
     )
-    dishes: Mapped[List['Dish']] = relationship(
+    dishes: Mapped[list['Dish']] = relationship(
         'Dish',
         back_populates='submenu'
     )
@@ -93,7 +92,7 @@ class Dish(Base):
         UUID,
         ForeignKey('submenus.id', ondelete='CASCADE'),
     )
-    submenu: Mapped[List['Submenu']] = relationship(
+    submenu: Mapped[list['Submenu']] = relationship(
         'Submenu',
         back_populates='dishes'
     )

@@ -1,10 +1,11 @@
 import pytest
+
 from .test_config import (
     client,
+    dish_other_prefix,
     get_entity_id,
     menu_other_prefix,
     submenu_other_prefix,
-    dish_other_prefix,
 )
 
 

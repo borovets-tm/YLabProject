@@ -1,5 +1,4 @@
 """Модуль с роутерами для модели Menu."""
-from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -7,7 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.menu import MenuCreate, Menu
+from menu_app.schemas.menu import Menu, MenuCreate
 from menu_app.services.menu_service import service
 
 routers = APIRouter(prefix='/menus')
@@ -17,9 +16,9 @@ routers = APIRouter(prefix='/menus')
     '/',
     summary='Получаем список меню',
     tags=['menus'],
-    response_model=List[Menu]
+    response_model=list[Menu]
 )
-async def get_list(db: Session = Depends(get_db)) -> List[Menu]:
+async def get_list(db: Session = Depends(get_db)) -> list[Menu]:
     """
     Функция получает из слоя service информацию о списке меню и передает ее в\
     качестве ответа на get-запрос.

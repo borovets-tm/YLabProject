@@ -1,11 +1,10 @@
 """Модуль Конфигурация используется для вынесения общих и часто используемых\
 функций."""
-from typing import Union
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from menu_app.models import Menu, Submenu, Dish
+from menu_app.models import Dish, Menu, Submenu
 
 
 async def data_commit(db: Session, model) -> None:
@@ -25,7 +24,7 @@ async def get_entity(
         db: Session,
         entity_model,
         entity_id: UUID
-) -> Union[Menu, Submenu, Dish]:
+) -> Menu | Submenu | Dish:
     """
     Функция для получения сущности модели по id для последующего обновления.
 
