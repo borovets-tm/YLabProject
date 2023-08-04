@@ -1,3 +1,4 @@
+"""Модуль реализует функционал запросов к базе данных модели Menu по CRUD."""
 from typing import List, Union
 from uuid import uuid4, UUID
 
@@ -15,11 +16,19 @@ from .config import data_commit, get_entity, remove_entity
 
 
 class MenuRepository:
+    """Класс взаимодействия с базой данных для модели Menu с методами CRUD."""
 
     def __init__(self):
+        """Инициализация класса с указанием используемой модели."""
         self.model = Menu
 
     async def get_list(self, db: Session) -> List[Menu]:
+        """
+        Метод получения списка меню.
+
+        :param db: Экземпляром сеанса базы данных.
+        :return: Список меню.
+        """
         submenus = (
             db
             .query(
@@ -48,6 +57,13 @@ class MenuRepository:
         return result
 
     async def get(self, db: Session, menu_id: UUID) -> Menu:
+        """
+        Метод получения конкретного меню.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param menu_id: Идентификатор меню.
+        :return: Меню с указанным идентификатором.
+        """
         subquery = (
             db
             .query(
@@ -80,6 +96,13 @@ class MenuRepository:
         return query
 
     async def create(self, db: Session, data: MenuCreate) -> Menu:
+        """
+        Метод создания меню.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Данные нового меню.
+        :return: Информация о созданном меню.
+        """
         menu = self.model(
             id=uuid4(),
             title=data.title,
@@ -91,7 +114,20 @@ class MenuRepository:
             print(e)
         return menu
 
-    async def update(self, db: Session, data: MenuCreate, menu_id: UUID) -> Menu:
+    async def update(
+            self,
+            db: Session,
+            data: MenuCreate,
+            menu_id: UUID
+    ) -> Menu:
+        """
+        Метод обновления информации о существующем меню.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Обновляемая информация.
+        :param menu_id: Идентификатор меню.
+        :return: Обновленная информация о меню.
+        """
         menu = await get_entity(db, self.model, menu_id)
         menu.title = data.title
         menu.description = data.description
@@ -103,6 +139,13 @@ class MenuRepository:
             db: Session,
             menu_id: UUID
     ) -> Union[JSONResponse, HTTPException]:
+        """
+        Метод удаляет меню из базы данных.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param menu_id: Идентификатор меню.
+        :return: JSONResponse об успехе или неудачи удаления.
+        """
         try:
             await remove_entity(db, self.model, menu_id)
             return JSONResponse(

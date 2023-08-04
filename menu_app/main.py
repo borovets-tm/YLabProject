@@ -1,3 +1,4 @@
+"""Модуль запуска приложения."""
 from fastapi import FastAPI, APIRouter
 from .routers import (
     menu_router,
@@ -6,8 +7,8 @@ from .routers import (
 )
 from .services.config import flush_redis
 
-app = FastAPI()
-router = APIRouter(prefix='/api/v1')
+app: FastAPI = FastAPI()
+router: APIRouter = APIRouter(prefix='/api/v1')
 
 
 submenu_router.routers.include_router(dish_router.routers)
@@ -17,6 +18,11 @@ app.include_router(router)
 
 
 @app.on_event('shutdown')
-async def shutdown():
-    await flush_redis()
+async def shutdown() -> None:
+    """
+    Функция вызывает функцию удаления записей кэша запросов из Redis при\
+    остановке приложения.
 
+    :return: None.
+    """
+    await flush_redis()

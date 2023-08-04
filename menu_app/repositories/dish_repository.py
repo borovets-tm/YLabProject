@@ -1,3 +1,4 @@
+"""Модуль реализует функционал запросов к базе данных модели Dish по CRUD."""
 from typing import List
 from uuid import uuid4, UUID
 
@@ -11,15 +12,30 @@ from .config import remove_entity, data_commit, get_entity
 
 
 class DishRepository:
+    """Класс взаимодействия с базой данных для модели Dish с методами CRUD."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Инициализация класса с указанием используемой модели."""
         self.model = Dish
 
     async def get_list(self, db: Session) -> List[Dish]:
+        """
+        Метод получения списка блюд.
+
+        :param db: Экземпляром сеанса базы данных.
+        :return: Список блюд.
+        """
         result = db.query(self.model).all()
         return result
 
     async def get(self, db: Session, dish_id: UUID) -> Dish:
+        """
+        Метод получения конкретного блюда.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param dish_id: идентификатор блюда.
+        :return: Блюдо с указанным идентификатором.
+        """
         result = (
             db
             .query(self.model)
@@ -30,7 +46,20 @@ class DishRepository:
             raise HTTPException(status_code=404, detail='dish not found')
         return result
 
-    async def create(self, db: Session, data: DishCreate, submenu_id: UUID) -> Dish:
+    async def create(
+            self,
+            db: Session,
+            data: DishCreate,
+            submenu_id: UUID
+    ) -> Dish:
+        """
+        Метод создания блюда.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Данные нового блюда.
+        :param submenu_id: Идентификатор подменю, которому относится блюдо.
+        :return: Информация о созданном блюде.
+        """
         dish = self.model(
             id=uuid4(),
             title=data.title,
@@ -44,7 +73,20 @@ class DishRepository:
             print(e)
         return dish
 
-    async def update(self, db: Session, data: DishCreate, dish_id: UUID) -> Dish:
+    async def update(
+            self,
+            db: Session,
+            data: DishCreate,
+            dish_id: UUID
+    ) -> Dish:
+        """
+        Метод обновления информации о существующем блюде.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Обновляемая информация.
+        :param dish_id: Идентификатор блюда.
+        :return: Обновленная информация о блюде.
+        """
         dish = await get_entity(db, self.model, dish_id)
         dish.title = data.title
         dish.description = data.description
@@ -53,6 +95,13 @@ class DishRepository:
         return dish
 
     async def remove(self, db: Session, dish_id: UUID) -> JSONResponse:
+        """
+        Метод удаляет блюдо из базы данных.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param dish_id: Идентификатор блюда.
+        :return: JSONResponse об успехе или неудачи удаления.
+        """
         try:
             await remove_entity(db, self.model, dish_id)
             return JSONResponse(
@@ -70,4 +119,4 @@ class DishRepository:
             )
 
 
-repository = DishRepository()
+repository: DishRepository = DishRepository()

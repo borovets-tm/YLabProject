@@ -1,3 +1,4 @@
+"""Модуль инициализации моделей, используемых в приложении."""
 import decimal
 import uuid
 from typing import List
@@ -9,6 +10,9 @@ from menu_app.database import Base, engine
 
 
 class Menu(Base):
+    """Класс Меню, который будет хранить в себе меню ресторана(бизнес-ланч, \
+    основное, летнее и т.п.)."""
+
     __tablename__ = 'menus'
     id: Mapped[uuid.UUID] = Column(
         UUID,
@@ -31,6 +35,9 @@ class Menu(Base):
 
 
 class Submenu(Base):
+    """Класс Подменю, который будет хранить в себе информацию о категориях\
+        блюд в меню ресторана."""
+
     __tablename__ = 'submenus'
     id: Mapped[uuid.UUID] = Column(
         UUID,
@@ -61,6 +68,9 @@ class Submenu(Base):
 
 
 class Dish(Base):
+    """Класс Блюда, который будет хранить в себе информацию о блюдах\
+    ресторана."""
+
     __tablename__ = 'dishes'
     id: Mapped[uuid.UUID] = Column(
         UUID,

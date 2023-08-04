@@ -1,3 +1,4 @@
+"""Модуль с роутерами для модели Menu."""
 from typing import List
 from uuid import UUID
 
@@ -19,6 +20,13 @@ routers = APIRouter(prefix='/menus')
     response_model=List[Menu]
 )
 async def get_list(db: Session = Depends(get_db)) -> List[Menu]:
+    """
+    Функция получает из слоя service информацию о списке меню и передает ее в\
+    качестве ответа на get-запрос.
+
+    :param db: Экземпляром сеанса базы данных.
+    :return: Список меню.
+    """
     return await service.get_list(db)
 
 
@@ -29,6 +37,14 @@ async def get_list(db: Session = Depends(get_db)) -> List[Menu]:
     response_model=Menu
 )
 async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
+    """
+    Функция получает из слоя service информацию о конкретном меню и передает\
+    ее качестве ответа на get-запрос.
+
+    :param db: Экземпляром сеанса базы данных.
+    :param menu_id: Идентификатор меню.
+    :return: Информация о меню с указанным идентификатором.
+    """
     return await service.get(db, menu_id)
 
 
@@ -40,6 +56,13 @@ async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
     response_model=Menu
 )
 async def create(data: MenuCreate, db: Session = Depends(get_db)) -> Menu:
+    """
+    Функция создает новое меню в базе данных с предоставленными данными.
+
+    :param data: Данные для создания меню.
+    :param db: Экземпляром сеанса базы данных.
+    :return: Информация о созданном меню.
+    """
     return await service.create(db, data)
 
 
@@ -54,6 +77,15 @@ async def update(
         data: MenuCreate,
         db: Session = Depends(get_db)
 ) -> Menu:
+    """
+    Функция обновляет информацию о созданном меню, передавая информацию через\
+    слой service в слой repository, после чего возвращает ответ пользователю.
+
+    :param menu_id: Идентификатор меню.
+    :param data: Обновляемая информация.
+    :param db: Экземпляром сеанса базы данных.
+    :return: Обновленная информация о меню.
+    """
     return await service.update(db, data, menu_id)
 
 
@@ -63,4 +95,11 @@ async def update(
     tags=['menus']
 )
 async def delete(menu_id: UUID, db: Session = Depends(get_db)) -> JSONResponse:
+    """
+    Функция удаляет экземпляр модели Menu.
+
+    :param menu_id: Идентификатор меню.
+    :param db: Экземпляром сеанса базы данных.
+    :return: Ответ об успехе или неудачи удаления.
+    """
     return await service.delete(db, menu_id)

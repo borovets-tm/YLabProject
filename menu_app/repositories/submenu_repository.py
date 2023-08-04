@@ -1,3 +1,5 @@
+"""Модуль реализует функционал запросов к базе данных модели Submenu по\
+CRUD."""
 from typing import List
 from uuid import uuid4, UUID
 
@@ -12,11 +14,20 @@ from .config import data_commit, get_entity, remove_entity
 
 
 class SubmenuRepository:
+    """Класс взаимодействия с базой данных для модели Submenu с методами\
+    CRUD."""
 
     def __init__(self):
+        """Инициализация класса с указанием используемой модели."""
         self.model = Submenu
 
     async def get_list(self, db: Session) -> List[Submenu]:
+        """
+        Метод получения списка подменю.
+
+        :param db: Экземпляром сеанса базы данных.
+        :return: Список подменю.
+        """
         query = (
             db
             .query(
@@ -32,6 +43,13 @@ class SubmenuRepository:
         return query
 
     async def get(self, db: Session, submenu_id: UUID) -> Submenu:
+        """
+        Метод получения конкретного подменю.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param submenu_id: Идентификатор подменю.
+        :return: Подменю с указанным идентификатором.
+        """
         result = (
             db
             .query(
@@ -55,6 +73,14 @@ class SubmenuRepository:
             data: SubmenuCreate,
             menu_id: UUID
     ) -> Submenu:
+        """
+        Метод создания подменю.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Данные нового подменю.
+        :param menu_id: Идентификатор меню, которому относится подменю.
+        :return: Информация о созданном подменю.
+        """
         submenu = self.model(
             id=uuid4(),
             title=data.title,
@@ -73,6 +99,14 @@ class SubmenuRepository:
             data: SubmenuCreate,
             submenu_id: UUID
     ) -> Submenu:
+        """
+        Метод обновления информации о существующем подменю.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param data: Обновляемая информация.
+        :param submenu_id: Идентификатор подменю.
+        :return: Обновленная информация подменю.
+        """
         submenu = await get_entity(db, self.model, submenu_id)
         submenu.title = data.title
         submenu.description = data.description
@@ -80,6 +114,13 @@ class SubmenuRepository:
         return submenu
 
     async def remove(self, db: Session, submenu_id: UUID) -> JSONResponse:
+        """
+        Метод удаляет подменю из базы данных.
+
+        :param db: Экземпляром сеанса базы данных.
+        :param submenu_id: Идентификатор подменю.
+        :return: JSONResponse об успехе или неудачи удаления.
+        """
         try:
             await remove_entity(db, self.model, submenu_id)
             return JSONResponse(
