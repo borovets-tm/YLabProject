@@ -1,73 +1,92 @@
-from sqlalchemy import Column, String, UUID, ForeignKey, Numeric
-from sqlalchemy.orm import relationship
+import decimal
+import uuid
+from typing import List
 
-from menu_app.database import Base
+from sqlalchemy import Column, String, UUID, ForeignKey, Numeric
+from sqlalchemy.orm import relationship, Mapped
+
+from menu_app.database import Base, engine
 
 
 class Menu(Base):
     __tablename__ = 'menus'
-    id = Column(
+    id: Mapped[uuid.UUID] = Column(
         UUID,
         primary_key=True,
         index=True
     )
-    title = Column(
+    title: Mapped[str] = Column(
         String,
         unique=True,
         index=True
     )
-    description = Column(
+    description: Mapped[str] = Column(
         String,
         nullable=True,
     )
-    submenus = relationship('Submenu', back_populates='menu')
+    submenus: Mapped[List['Submenu']] = relationship(
+        'Submenu',
+        back_populates='menu'
+    )
 
 
 class Submenu(Base):
     __tablename__ = 'submenus'
-    id = Column(
+    id: Mapped[uuid.UUID] = Column(
         UUID,
         primary_key=True,
         index=True
     )
-    title = Column(
+    title: Mapped[str] = Column(
         String,
         unique=True,
         index=True
     )
-    description = Column(
+    description: Mapped[str] = Column(
         String,
-        nullable=True
+        nullable=True,
     )
-    menu_id = Column(
+    menu_id: Mapped[uuid.UUID] = Column(
         UUID,
         ForeignKey('menus.id', ondelete='CASCADE')
     )
-    menu = relationship('Menu', back_populates='submenus')
-    dishes = relationship('Dish', back_populates='submenu')
+    menu: Mapped[List['Menu']] = relationship(
+        'Menu',
+        back_populates='submenus'
+    )
+    dishes: Mapped[List['Dish']] = relationship(
+        'Dish',
+        back_populates='submenu'
+    )
 
 
 class Dish(Base):
     __tablename__ = 'dishes'
-    id = Column(
+    id: Mapped[uuid.UUID] = Column(
         UUID,
         primary_key=True,
         index=True
     )
-    title = Column(
+    title: Mapped[str] = Column(
         String,
         unique=True,
         index=True
     )
-    description = Column(
+    description: Mapped[str] = Column(
         String,
-        nullable=True
+        nullable=True,
     )
-    price = Column(
+    price: Mapped[decimal.Decimal] = Column(
         Numeric(10, 2)
     )
-    submenu_id = Column(
+    submenu_id: Mapped[uuid.UUID] = Column(
         UUID,
         ForeignKey('submenus.id', ondelete='CASCADE'),
     )
-    submenu = relationship('Submenu', back_populates='dishes')
+    submenu: Mapped[List['Submenu']] = relationship(
+        'Submenu',
+        back_populates='dishes'
+    )
+
+
+Base.metadata.create_all(bind=engine)

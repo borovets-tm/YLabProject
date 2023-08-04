@@ -10,7 +10,7 @@ from menu_app.main import app
 client = TestClient(app=app)
 load_dotenv()
 REDIS_HOST = getenv('REDIS_HOST', 'localhost')
-url_redis = f'redis://{REDIS_HOST}'
+url_redis = f'redis://{REDIS_HOST}/2'
 
 menu_post_list_prefix = '/api/v1/menus/'
 menu_other_prefix = '/api/v1/menus/%(menu_id)s/'
@@ -40,9 +40,8 @@ async def get_entity_id(key: str) -> UUID:
 @pytest.mark.order('last')
 @pytest.mark.asyncio
 async def test_clear_cache_after_test():
-    redis = await aioredis.from_url(url_redis, decode_responses=True)
-    keys = await redis.keys()
-    await redis.delete(*keys)
+    redis = await aioredis.from_url(url_redis)
+    await redis.flushdb(asynchronous=True)
     keys = await redis.keys()
     await redis.connection_pool.disconnect()
     assert keys == []

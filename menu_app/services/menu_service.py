@@ -1,0 +1,58 @@
+from typing import List
+from uuid import UUID
+
+from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+
+from menu_app.schemas.menu import MenuCreate, Menu
+from menu_app.repositories.menu_repository import repository, MenuRepository
+from .config import set_cache, get_cache, delete_cache, flush_redis
+
+
+class MenuService:
+
+    def __init__(self):
+        self.repository: MenuRepository = repository
+        self.fields: tuple = (
+            'id',
+            'title',
+            'description',
+            'submenus_count',
+            'dishes_count'
+        )
+
+    async def get_list(self, db: Session) -> List[Menu]:
+        result = await get_cache('menu.get_list')
+        if not result:
+            result = await self.repository.get_list(db)
+            await set_cache('menu.get_list', result)
+        return result
+
+    async def get(self, db: Session, menu_id: UUID) -> Menu:
+        result = await get_cache(f'menu.get.{menu_id}')
+        if not result:
+            result = await self.repository.get(db, menu_id)
+            await set_cache(f'menu.get.{menu_id}', result)
+        return result
+
+    async def create(self, db: Session, data: MenuCreate) -> Menu:
+        await delete_cache(['menu.get_list'])
+        return await self.repository.create(db, data)
+
+    async def update(
+            self,
+            db: Session,
+            data: MenuCreate,
+            menu_id: UUID
+    ) -> Menu:
+        await delete_cache(['menu.get_list', f'menu.get.{menu_id}'])
+        result = await self.repository.update(db, data, menu_id)
+        return result
+
+    async def delete(self, db: Session, menu_id: UUID) -> JSONResponse:
+        await flush_redis()
+        result = await self.repository.remove(db, menu_id)
+        return result
+
+
+service = MenuService()
