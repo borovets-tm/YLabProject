@@ -16,6 +16,11 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
     '/',
     tags=['dishes'],
     summary='Получаем список блюд',
+    description=(
+            'В ответе вернутся все экземпляры модели Блюда в виде списка, '
+            'находящиеся в базе данных или пустой список, если не создавалось '
+            'ни одного экземпляра.'
+    ),
     response_model=list[Dish]
 )
 async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
@@ -32,6 +37,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
 @routers.get(
     '/{dish_id}/',
     summary='Получаем блюдо',
+    description='В ответе в случае успеха вернется экземпляр модели Блюдо.',
     tags=['dishes'],
     response_model=Dish
 )
@@ -51,6 +57,12 @@ async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
     '/',
     status_code=201,
     summary='Создаем блюдо',
+    description=(
+        'Необходимо указать название, описание и цену блюда, а также id '
+        'существующего подменю, к которому будет относиться блюдо. ID будет '
+        'сгенерирован системой. В ответе вернется информация о созданном '
+        'экземпляре.'
+    ),
     tags=['dishes'],
     response_model=Dish
 )
@@ -75,6 +87,10 @@ async def create(
 @routers.patch(
     '/{dish_id}/',
     summary='Обновляем блюдо',
+    description=(
+        'Необходимо указать изменяемые данные. Ответ вернет обновленный '
+        'экземпляр модели.'
+    ),
     tags=['dishes'],
     response_model=DishCreate
 )
@@ -98,6 +114,10 @@ async def update(
 @routers.delete(
     '/{dish_id}/',
     summary='Удаляем блюдо',
+    description=(
+        'Результатом станет удаление экземпляра модели с указанным id. '
+        'В ответе вернется информация об успехе или неудачи удаления.'
+    ),
     tags=['dishes'],
 )
 async def delete(

@@ -15,6 +15,11 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
 @routers.get(
     '/',
     summary='Получаем список подменю',
+    description=(
+        'В ответе вернутся все экземпляры модели Подменю, находящиеся в базе '
+        'данных в виде списка или пустой список, если не создавалось ни '
+        'одного экземпляра.'
+    ),
     tags=['submenus'],
     response_model=list[Submenu]
 )
@@ -32,6 +37,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
 @routers.get(
     '/{submenu_id}/',
     summary='Получаем подменю',
+    description='В ответе в случае успеха вернется экземпляр модели Подменю.',
     tags=['submenus'],
     response_model=Submenu
 )
@@ -50,6 +56,12 @@ async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
 @routers.post(
     '/',
     summary='Создаем подменю',
+    description=(
+        'Необходимо указать название и описание подменю, а также id '
+        'существующего меню, к которому будет относиться подменю. ID будет '
+        'сгенерирован системой. В ответе вернется информация о созданном '
+        'экземпляре.'
+    ),
     tags=['submenus'],
     status_code=201,
     response_model=Submenu
@@ -73,6 +85,10 @@ async def create(
 @routers.patch(
     '/{submenu_id}/',
     summary='Обновляем подменю',
+    description=(
+        'Необходимо указать изменяемые данные. Ответ вернет обновленный '
+        'экземпляр модели.'
+    ),
     tags=['submenus'],
     response_model=SubmenuCreate
 )
@@ -97,6 +113,10 @@ async def update(
 @routers.delete(
     '/{submenu_id}/',
     summary='Удаляем подменю',
+    description=(
+        'Результатом станет удаление экземпляра модели с указанным id. '
+        'В ответе вернется информация об успехе или неудачи удаления.'
+    ),
     tags=['submenus']
 )
 async def delete(
