@@ -16,8 +16,8 @@ class BaseService:
 
     def __init__(self):
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
-        self.url_redis: str = f'redis://{REDIS_HOST}/1'
-        self.cache_lifetime: int = 60
+        self.url_redis = f'redis://{REDIS_HOST}/1'
+        self.cache_lifetime = 60
 
     async def set_cache(self, request: str, response: Any) -> None:
         """
