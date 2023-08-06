@@ -1,12 +1,6 @@
 import pytest
 
-from .test_config import (
-    client,
-    dish_post_list_prefix,
-    get_entity_id,
-    menu_post_list_prefix,
-    submenu_post_list_prefix,
-)
+from .test_config import app, client, get_entity_id
 
 
 @pytest.mark.order(3)
@@ -15,7 +9,7 @@ class TestGroup:
     @pytest.mark.asyncio
     async def test_menus(self):
         menu_id = await get_entity_id('menu_id')
-        response = client.get(menu_post_list_prefix)
+        response = client.get(app.url_path_for('get_list_menu'))
         assert response.status_code == 200
         assert response.json() == [
             {
@@ -32,9 +26,7 @@ class TestGroup:
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(
-            submenu_post_list_prefix % {
-                'menu_id': menu_id
-            }
+            app.url_path_for('get_list_submenu', menu_id=menu_id)
         )
         assert response.status_code == 200
         assert response.json() == [
@@ -52,10 +44,11 @@ class TestGroup:
         submenu_id = await get_entity_id('submenu_id')
         dish_id = await get_entity_id('dish_id')
         response = client.get(
-            dish_post_list_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            }
+            app.url_path_for(
+                'get_list_dish',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            )
         )
         assert response.status_code == 200
         assert response.json() == [

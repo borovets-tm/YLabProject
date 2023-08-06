@@ -8,10 +8,10 @@ from starlette.responses import JSONResponse
 from menu_app.models import Dish
 from menu_app.schemas.dish import DishCreate
 
-from .config import data_commit, get_entity, remove_entity
+from .config import BaseRepository
 
 
-class DishRepository:
+class DishRepository(BaseRepository):
     """Класс взаимодействия с базой данных для модели Dish с методами CRUD."""
 
     def __init__(self) -> None:
@@ -68,7 +68,7 @@ class DishRepository:
             submenu_id=submenu_id
         )
         try:
-            await data_commit(db, dish)
+            await self.data_commit(db, dish)
         except Exception as e:
             print(e)
         return dish
@@ -87,11 +87,11 @@ class DishRepository:
         :param dish_id: Идентификатор блюда.
         :return: Обновленная информация о блюде.
         """
-        dish = await get_entity(db, self.model, dish_id)
+        dish = await self.get_entity(db, self.model, dish_id)
         dish.title = data.title
         dish.description = data.description
         dish.price = data.price
-        await data_commit(db, dish)
+        await self.data_commit(db, dish)
         return dish
 
     async def remove(self, db: Session, dish_id: UUID) -> JSONResponse:
@@ -103,7 +103,7 @@ class DishRepository:
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
-            await remove_entity(db, self.model, dish_id)
+            await self.remove_entity(db, self.model, dish_id)
             return JSONResponse(
                 status_code=200,
                 content={

@@ -16,11 +16,12 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
     '/',
     summary='Получаем список подменю',
     description=(
-        'В ответе вернутся все экземпляры модели Подменю, находящиеся в базе '
-        'данных в виде списка или пустой список, если не создавалось ни '
-        'одного экземпляра.'
+            'В ответе вернутся все экземпляры модели Подменю, находящиеся в базе '
+            'данных в виде списка или пустой список, если не создавалось ни '
+            'одного экземпляра.'
     ),
     tags=['submenus'],
+    name='get_list_submenu',
     response_model=list[Submenu]
 )
 async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
@@ -39,6 +40,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
     summary='Получаем подменю',
     description='В ответе в случае успеха вернется экземпляр модели Подменю.',
     tags=['submenus'],
+    name='get_submenu',
     response_model=Submenu
 )
 async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
@@ -57,12 +59,13 @@ async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
     '/',
     summary='Создаем подменю',
     description=(
-        'Необходимо указать название и описание подменю, а также id '
-        'существующего меню, к которому будет относиться подменю. ID будет '
-        'сгенерирован системой. В ответе вернется информация о созданном '
-        'экземпляре.'
+            'Необходимо указать название и описание подменю, а также id '
+            'существующего меню, к которому будет относиться подменю. ID будет '
+            'сгенерирован системой. В ответе вернется информация о созданном '
+            'экземпляре.'
     ),
     tags=['submenus'],
+    name='create_submenu',
     status_code=201,
     response_model=Submenu
 )
@@ -86,10 +89,11 @@ async def create(
     '/{submenu_id}/',
     summary='Обновляем подменю',
     description=(
-        'Необходимо указать изменяемые данные. Ответ вернет обновленный '
-        'экземпляр модели.'
+            'Необходимо указать изменяемые данные. Ответ вернет обновленный '
+            'экземпляр модели.'
     ),
     tags=['submenus'],
+    name='update_submenu',
     response_model=SubmenuCreate
 )
 async def update(
@@ -114,10 +118,11 @@ async def update(
     '/{submenu_id}/',
     summary='Удаляем подменю',
     description=(
-        'Результатом станет удаление экземпляра модели с указанным id. '
-        'В ответе вернется информация об успехе или неудачи удаления.'
+            'Результатом станет удаление экземпляра модели с указанным id. '
+            'В ответе вернется информация об успехе или неудачи удаления.'
     ),
-    tags=['submenus']
+    tags=['submenus'],
+    name='delete_submenu'
 )
 async def delete(
         submenu_id: UUID,

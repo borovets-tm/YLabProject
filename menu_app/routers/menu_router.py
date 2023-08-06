@@ -21,7 +21,8 @@ routers = APIRouter(prefix='/menus')
             'ни одного экземпляра.'
     ),
     tags=['menus'],
-    response_model=list[Menu]
+    response_model=list[Menu],
+    name='get_list_menu'
 )
 async def get_list(db: Session = Depends(get_db)) -> list[Menu]:
     """
@@ -39,6 +40,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Menu]:
     summary='Получаем экземпляр меню по id',
     description='В ответе в случае успеха вернется экземпляр модели Меню.',
     tags=['menus'],
+    name='get_menu',
     response_model=Menu,
 )
 async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
@@ -62,6 +64,7 @@ async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
             'экземпляре.'
     ),
     tags=['menus'],
+    name='create_menu',
     status_code=201,
     response_model=Menu
 )
@@ -84,6 +87,7 @@ async def create(data: MenuCreate, db: Session = Depends(get_db)) -> Menu:
             'экземпляр модели.'
     ),
     tags=['menus'],
+    name='update_menu',
     response_model=MenuCreate
 )
 async def update(
@@ -110,7 +114,8 @@ async def update(
             'Результатом станет удаление экземпляра модели с указанным id. '
             'В ответе вернется информация об успехе или неудачи удаления.'
     ),
-    tags=['menus']
+    tags=['menus'],
+    name='delete_menu'
 )
 async def delete(menu_id: UUID, db: Session = Depends(get_db)) -> JSONResponse:
     """

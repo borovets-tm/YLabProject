@@ -1,14 +1,13 @@
 import pytest
 
 from .test_config import (
+    app,
     client,
     dish_post_list_prefix,
     get_entity_id,
     menu_other_prefix,
     menu_post_list_prefix,
     set_entity_id,
-    submenu_other_prefix,
-    submenu_post_list_prefix,
 )
 
 
@@ -20,7 +19,10 @@ class TestPostman:
             'title': 'My menu 1',
             'description': 'My menu description 1'
         }
-        response = client.post(menu_post_list_prefix, json=test_entity)
+        response = client.post(
+            app.url_path_for('create_menu'),
+            json=test_entity
+        )
         assert response.status_code == 201
         data = response.json()
         menu_id = data['id']
@@ -42,7 +44,7 @@ class TestPostman:
             'menu_id': menu_id
         }
         response = client.post(
-            submenu_post_list_prefix % {'menu_id': menu_id},
+            app.url_path_for('create_submenu', menu_id=menu_id),
             json=test_entity
         )
         data = response.json()
@@ -67,10 +69,11 @@ class TestPostman:
             'submenu_id': submenu_id
         }
         response = client.post(
-            dish_post_list_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            },
+            app.url_path_for(
+                'create_dish',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            ),
             json=test_entity
         )
         data = response.json()
@@ -95,10 +98,11 @@ class TestPostman:
             'submenu_id': submenu_id
         }
         response = client.post(
-            dish_post_list_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            },
+            app.url_path_for(
+                'create_dish',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            ),
             json=test_entity
         )
         data = response.json()
@@ -115,7 +119,7 @@ class TestPostman:
     @pytest.mark.asyncio
     async def test_menu_get_after_created_entities(self):
         menu_id = await get_entity_id('menu_id')
-        response = client.get(menu_other_prefix % {'menu_id': menu_id})
+        response = client.get(app.url_path_for('get_menu', menu_id=menu_id))
         assert response.status_code == 200
         assert response.json() == {
             'id': menu_id,
@@ -130,10 +134,11 @@ class TestPostman:
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(
-            submenu_other_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            }
+            app.url_path_for(
+                'get_submenu',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            )
         )
         assert response.status_code == 200
         assert response.json() == {
@@ -148,10 +153,11 @@ class TestPostman:
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.delete(
-            submenu_other_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            }
+            app.url_path_for(
+                'delete_submenu',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            )
         )
         assert response.status_code == 200
         assert response.json() == {
@@ -163,10 +169,11 @@ class TestPostman:
         menu_id = await get_entity_id('menu_id')
         submenu_id = await get_entity_id('submenu_id')
         response = client.get(
-            submenu_other_prefix % {
-                'menu_id': menu_id,
-                'submenu_id': submenu_id
-            }
+            app.url_path_for(
+                'get_submenu',
+                menu_id=menu_id,
+                submenu_id=submenu_id
+            )
         )
         assert response.status_code == 404
         assert response.json() == {

@@ -7,14 +7,15 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.submenu_repository import SubmenuRepository, repository
 from menu_app.schemas.submenu import Submenu, SubmenuCreate
 
-from .config import delete_cache, flush_redis, get_cache, set_cache
+from .config import BaseService
 
 
-class SubmenuService:
+class SubmenuService(BaseService):
     """Модель сервисных методов для подменю."""
 
     def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
+        super().__init__()
         self.repository: SubmenuRepository = repository
 
     async def get_list(self, db: Session) -> list[Submenu]:
@@ -26,10 +27,10 @@ class SubmenuService:
         :param db: Экземпляром сеанса базы данных.
         :return: Список подменю.
         """
-        result = await get_cache('submenu.get_list')
+        result = await self.get_cache('submenu.get_list')
         if not result:
             result = await self.repository.get_list(db)
-            await set_cache('submenu.get_list', result)
+            await self.set_cache('submenu.get_list', result)
         return result
 
     async def get(self, db: Session, submenu_id: UUID) -> Submenu:
@@ -43,10 +44,10 @@ class SubmenuService:
         :param submenu_id: Идентификатор подменю.
         :return: Экземпляр модели.
         """
-        result = await get_cache(f'submenu.get.{submenu_id}')
+        result = await self.get_cache(f'submenu.get.{submenu_id}')
         if not result:
             result = await self.repository.get(db, submenu_id)
-            await set_cache(f'submenu.get.{submenu_id}', result)
+            await self.set_cache(f'submenu.get.{submenu_id}', result)
         return result
 
     async def create(
@@ -65,7 +66,7 @@ class SubmenuService:
         :param menu_id: Идентификатор меню.
         :return: Экземпляр созданного подменю.
         """
-        await delete_cache(
+        await self.delete_cache(
             [
                 'menu.get_list',
                 f'menu.get{menu_id}',
@@ -89,7 +90,12 @@ class SubmenuService:
         :param submenu_id: Идентификатор подменю.
         :return: Экземпляр подменю с обновленными данными.
         """
-        await delete_cache(['submenu.get_list', f'submenu.get.{submenu_id}'])
+        await self.delete_cache(
+            [
+                'submenu.get_list',
+                f'submenu.get.{submenu_id}'
+            ]
+        )
         result = await self.repository.update(db, data, submenu_id)
         return result
 
@@ -107,7 +113,7 @@ class SubmenuService:
         :param submenu_id: Идентификатор удаляемого подменю.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await flush_redis()
+        await self.flush_redis()
         result = await self.repository.remove(db, submenu_id)
         return result
 

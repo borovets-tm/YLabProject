@@ -7,14 +7,15 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.menu_repository import MenuRepository, repository
 from menu_app.schemas.menu import Menu, MenuCreate
 
-from .config import delete_cache, flush_redis, get_cache, set_cache
+from .config import BaseService
 
 
-class MenuService:
+class MenuService(BaseService):
     """Модель сервисных методов для меню."""
 
     def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
+        super().__init__()
         self.repository: MenuRepository = repository
 
     async def get_list(self, db: Session) -> list[Menu]:
@@ -26,10 +27,10 @@ class MenuService:
         :param db: Экземпляром сеанса базы данных.
         :return: Список меню.
         """
-        result = await get_cache('menu.get_list')
+        result = await self.get_cache('menu.get_list')
         if not result:
             result = await self.repository.get_list(db)
-            await set_cache('menu.get_list', result)
+            await self.set_cache('menu.get_list', result)
         return result
 
     async def get(self, db: Session, menu_id: UUID) -> Menu:
@@ -42,10 +43,10 @@ class MenuService:
         :param menu_id: Идентификатор меню.
         :return: Экземпляр модели.
         """
-        result = await get_cache(f'menu.get.{menu_id}')
+        result = await self.get_cache(f'menu.get.{menu_id}')
         if not result:
             result = await self.repository.get(db, menu_id)
-            await set_cache(f'menu.get.{menu_id}', result)
+            await self.set_cache(f'menu.get.{menu_id}', result)
         return result
 
     async def create(self, db: Session, data: MenuCreate) -> Menu:
@@ -57,7 +58,7 @@ class MenuService:
         :param data: Данные для создания нового экземпляра.
         :return: Экземпляр созданного меню.
         """
-        await delete_cache(['menu.get_list'])
+        await self.delete_cache(['menu.get_list'])
         return await self.repository.create(db, data)
 
     async def update(
@@ -74,7 +75,7 @@ class MenuService:
         :param menu_id: Идентификатор меню.
         :return: Экземпляр меню с обновленными данными.
         """
-        await delete_cache(['menu.get_list', f'menu.get.{menu_id}'])
+        await self.delete_cache(['menu.get_list', f'menu.get.{menu_id}'])
         result = await self.repository.update(db, data, menu_id)
         return result
 
@@ -88,7 +89,7 @@ class MenuService:
         :param menu_id: Идентификатор удаляемого меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await flush_redis()
+        await self.flush_redis()
         result = await self.repository.remove(db, menu_id)
         return result
 

@@ -10,10 +10,10 @@ from starlette.responses import JSONResponse
 from menu_app.models import Submenu
 from menu_app.schemas.submenu import SubmenuCreate
 
-from .config import data_commit, get_entity, remove_entity
+from .config import BaseRepository
 
 
-class SubmenuRepository:
+class SubmenuRepository(BaseRepository):
     """Класс взаимодействия с базой данных для модели Submenu с методами\
     CRUD."""
 
@@ -88,7 +88,7 @@ class SubmenuRepository:
             menu_id=menu_id
         )
         try:
-            await data_commit(db, submenu)
+            await self.data_commit(db, submenu)
         except Exception as e:
             print(e)
         return submenu
@@ -107,10 +107,10 @@ class SubmenuRepository:
         :param submenu_id: Идентификатор подменю.
         :return: Обновленная информация подменю.
         """
-        submenu = await get_entity(db, self.model, submenu_id)
+        submenu = await self.get_entity(db, self.model, submenu_id)
         submenu.title = data.title
         submenu.description = data.description
-        await data_commit(db, submenu)
+        await self.data_commit(db, submenu)
         return submenu
 
     async def remove(self, db: Session, submenu_id: UUID) -> JSONResponse:
@@ -122,7 +122,7 @@ class SubmenuRepository:
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
-            await remove_entity(db, self.model, submenu_id)
+            await self.remove_entity(db, self.model, submenu_id)
             return JSONResponse(
                 status_code=200,
                 content={

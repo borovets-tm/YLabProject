@@ -10,10 +10,10 @@ from starlette.responses import JSONResponse
 from menu_app.models import Dish, Menu, Submenu
 from menu_app.schemas.menu import MenuCreate
 
-from .config import data_commit, get_entity, remove_entity
+from .config import BaseRepository
 
 
-class MenuRepository:
+class MenuRepository(BaseRepository):
     """Класс взаимодействия с базой данных для модели Menu с методами CRUD."""
 
     def __init__(self):
@@ -107,7 +107,7 @@ class MenuRepository:
             description=data.description
         )
         try:
-            await data_commit(db, menu)
+            await self.data_commit(db, menu)
         except Exception as e:
             print(e)
         return menu
@@ -126,10 +126,10 @@ class MenuRepository:
         :param menu_id: Идентификатор меню.
         :return: Обновленная информация о меню.
         """
-        menu = await get_entity(db, self.model, menu_id)
+        menu = await self.get_entity(db, self.model, menu_id)
         menu.title = data.title
         menu.description = data.description
-        await data_commit(db, menu)
+        await self.data_commit(db, menu)
         return menu
 
     async def remove(
@@ -145,7 +145,7 @@ class MenuRepository:
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
-            await remove_entity(db, self.model, menu_id)
+            await self.remove_entity(db, self.model, menu_id)
             return JSONResponse(
                 status_code=200,
                 content={

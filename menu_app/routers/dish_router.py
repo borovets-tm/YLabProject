@@ -15,6 +15,7 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
 @routers.get(
     '/',
     tags=['dishes'],
+    name='get_list_dish',
     summary='Получаем список блюд',
     description=(
             'В ответе вернутся все экземпляры модели Блюда в виде списка, '
@@ -39,6 +40,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
     summary='Получаем блюдо',
     description='В ответе в случае успеха вернется экземпляр модели Блюдо.',
     tags=['dishes'],
+    name='get_dish',
     response_model=Dish
 )
 async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
@@ -58,12 +60,13 @@ async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
     status_code=201,
     summary='Создаем блюдо',
     description=(
-        'Необходимо указать название, описание и цену блюда, а также id '
-        'существующего подменю, к которому будет относиться блюдо. ID будет '
-        'сгенерирован системой. В ответе вернется информация о созданном '
-        'экземпляре.'
+            'Необходимо указать название, описание и цену блюда, а также id '
+            'существующего подменю, к которому будет относиться блюдо. ID будет '
+            'сгенерирован системой. В ответе вернется информация о созданном '
+            'экземпляре.'
     ),
     tags=['dishes'],
+    name='create_dish',
     response_model=Dish
 )
 async def create(
@@ -88,10 +91,11 @@ async def create(
     '/{dish_id}/',
     summary='Обновляем блюдо',
     description=(
-        'Необходимо указать изменяемые данные. Ответ вернет обновленный '
-        'экземпляр модели.'
+            'Необходимо указать изменяемые данные. Ответ вернет обновленный '
+            'экземпляр модели.'
     ),
     tags=['dishes'],
+    name='update_dish',
     response_model=DishCreate
 )
 async def update(
@@ -115,10 +119,11 @@ async def update(
     '/{dish_id}/',
     summary='Удаляем блюдо',
     description=(
-        'Результатом станет удаление экземпляра модели с указанным id. '
-        'В ответе вернется информация об успехе или неудачи удаления.'
+            'Результатом станет удаление экземпляра модели с указанным id. '
+            'В ответе вернется информация об успехе или неудачи удаления.'
     ),
     tags=['dishes'],
+    name='delete_dish'
 )
 async def delete(
         dish_id: UUID,

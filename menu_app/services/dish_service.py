@@ -7,14 +7,15 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.dish_repository import DishRepository, repository
 from menu_app.schemas.dish import Dish, DishCreate
 
-from .config import delete_cache, flush_redis, get_cache, set_cache
+from .config import BaseService
 
 
-class DishService:
+class DishService(BaseService):
     """Модель сервисных методов для блюд."""
 
     def __init__(self) -> None:
         """Инициализация класса с указанием слоя репозитория."""
+        super().__init__()
         self.repository: DishRepository = repository
 
     async def get_list(self, db: Session) -> list[Dish]:
@@ -26,10 +27,10 @@ class DishService:
         :param db: Экземпляром сеанса базы данных.
         :return: Список блюд.
         """
-        result = await get_cache('dish.get_list')
+        result = await self.get_cache('dish.get_list')
         if not result:
             result = await self.repository.get_list(db)
-            await set_cache('dish.get_list', result)
+            await self.set_cache('dish.get_list', result)
         return result
 
     async def get(self, db: Session, dish_id: UUID) -> Dish:
@@ -42,10 +43,10 @@ class DishService:
         :param dish_id: Идентификатор блюда.
         :return: Экземпляр модели.
         """
-        result = await get_cache(f'dish.get.{dish_id}')
+        result = await self.get_cache(f'dish.get.{dish_id}')
         if not result:
             result = await self.repository.get(db, dish_id)
-            await set_cache(f'dish.get.{dish_id}', result)
+            await self.set_cache(f'dish.get.{dish_id}', result)
         return result
 
     async def create(
@@ -66,7 +67,7 @@ class DishService:
         :param menu_id: Идентификатор меню.
         :return: Экземпляр созданного блюда.
         """
-        await delete_cache(
+        await self.delete_cache(
             [
                 'menu.get_list',
                 f'menu.get{menu_id}',
@@ -91,7 +92,7 @@ class DishService:
         :param dish_id: Идентификатор блюда.
         :return: Экземпляр блюда с обновленными данными.
         """
-        await delete_cache(['dish.get_list', f'dish.get.{dish_id}'])
+        await self.delete_cache(['dish.get_list', f'dish.get.{dish_id}'])
         result = await self.repository.update(db, data, dish_id)
         return result
 
@@ -109,7 +110,7 @@ class DishService:
         :param dish_id: Идентификатор удаляемого блюда.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await flush_redis()
+        await self.flush_redis()
         result = await self.repository.remove(db, dish_id)
         return result
 
