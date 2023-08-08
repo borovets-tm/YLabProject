@@ -2,13 +2,14 @@
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy import Row, Sequence, delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.models import Dish
 from menu_app.schemas.dish import DishCreate
 
-from .config import BaseRepository
+from .base_repository import BaseRepository
 
 
 class DishRepository(BaseRepository):
@@ -18,17 +19,25 @@ class DishRepository(BaseRepository):
         """Инициализация класса с указанием используемой модели."""
         self.model = Dish
 
-    async def get_list(self, db: Session) -> list[Dish]:
+    async def get_list(self, db: AsyncSession) -> Sequence:
         """
         Метод получения списка блюд.
 
         :param db: Экземпляром сеанса базы данных.
         :return: Список блюд.
         """
-        result = db.query(self.model).all()
-        return result
+        async with db as session:
+            query = select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                self.model.price
+            )
+            result = await session.execute(query)
+            curr = result.all()
+        return curr
 
-    async def get(self, db: Session, dish_id: UUID) -> Dish:
+    async def get(self, db: AsyncSession, dish_id: UUID) -> Row:
         """
         Метод получения конкретного блюда.
 
@@ -36,19 +45,25 @@ class DishRepository(BaseRepository):
         :param dish_id: идентификатор блюда.
         :return: Блюдо с указанным идентификатором.
         """
-        result = (
-            db
-            .query(self.model)
-            .filter(self.model.id == dish_id)
-            .first()
-        )
-        if not result:
+        async with db as session:
+            query = (
+                select(
+                    self.model.id,
+                    self.model.title,
+                    self.model.description,
+                    self.model.price
+                )
+                .filter(self.model.id == dish_id)
+            )
+            result = await session.execute(query)
+            curr = result.first()
+        if not curr:
             raise HTTPException(status_code=404, detail='dish not found')
-        return result
+        return curr
 
     async def create(
             self,
-            db: Session,
+            db: AsyncSession,
             data: DishCreate,
             submenu_id: UUID
     ) -> Dish:
@@ -67,15 +82,12 @@ class DishRepository(BaseRepository):
             price=data.price,
             submenu_id=submenu_id
         )
-        try:
-            await self.data_commit(db, dish)
-        except Exception as e:
-            print(e)
+        await self.data_commit(db, dish)
         return dish
 
     async def update(
             self,
-            db: Session,
+            db: AsyncSession,
             data: DishCreate,
             dish_id: UUID
     ) -> Dish:
@@ -87,14 +99,20 @@ class DishRepository(BaseRepository):
         :param dish_id: Идентификатор блюда.
         :return: Обновленная информация о блюде.
         """
-        dish = await self.get_entity(db, self.model, dish_id)
-        dish.title = data.title
-        dish.description = data.description
-        dish.price = data.price
-        await self.data_commit(db, dish)
+        async with db as session:
+            query = (
+                select(self.model)
+                .filter(self.model.id == dish_id)
+            )
+            result = await session.execute(query)
+            dish = result.scalars().one()
+            dish.title = data.title
+            dish.description = data.description
+            dish.price = data.price
+            await self.data_commit(db, dish)
         return dish
 
-    async def remove(self, db: Session, dish_id: UUID) -> JSONResponse:
+    async def remove(self, db: AsyncSession, dish_id: UUID) -> JSONResponse:
         """
         Метод удаляет блюдо из базы данных.
 
@@ -103,7 +121,10 @@ class DishRepository(BaseRepository):
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
-            await self.remove_entity(db, self.model, dish_id)
+            query = delete(self.model).filter(self.model.id == dish_id)
+            async with db as session:
+                await session.execute(query)
+                await session.commit()
             return JSONResponse(
                 status_code=200,
                 content={

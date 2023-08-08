@@ -2,8 +2,10 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 
+from .database.postgres import db
+from .models import init_models
 from .routers import dish_router, menu_router, submenu_router
-from .services.config import BaseService
+from .services.base_service import BaseService
 
 app: FastAPI = FastAPI()
 router: APIRouter = APIRouter(prefix='/api/v1')
@@ -20,6 +22,12 @@ openapi_schema = get_openapi(
     routes=router.routes
 )
 app.openapi_schema = openapi_schema
+
+
+@app.on_event('startup')
+async def setup_db() -> None:
+    db.setup()
+    await init_models()
 
 
 @app.on_event('shutdown')

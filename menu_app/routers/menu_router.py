@@ -2,10 +2,10 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
-from menu_app.database import get_db
+from menu_app.database.postgres import db as get_db
 from menu_app.schemas.menu import Menu, MenuCreate
 from menu_app.services.menu_service import service
 
@@ -24,7 +24,7 @@ routers = APIRouter(prefix='/menus')
     response_model=list[Menu],
     name='get_list_menu'
 )
-async def get_list(db: Session = Depends(get_db)) -> list[Menu]:
+async def get_list(db: AsyncSession = Depends(get_db)) -> list[Menu]:
     """
     Функция получает из слоя service информацию о списке меню и передает ее в\
     качестве ответа на get-запрос.
@@ -43,7 +43,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Menu]:
     name='get_menu',
     response_model=Menu,
 )
-async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
+async def get(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> Menu:
     """
     Функция получает из слоя service информацию о конкретном меню и передает\
     ее качестве ответа на get-запрос.
@@ -68,7 +68,7 @@ async def get(menu_id: UUID, db: Session = Depends(get_db)) -> Menu:
     status_code=201,
     response_model=Menu
 )
-async def create(data: MenuCreate, db: Session = Depends(get_db)) -> Menu:
+async def create(data: MenuCreate, db: AsyncSession = Depends(get_db)) -> Menu:
     """
     Функция создает новое меню в базе данных с предоставленными данными.
 
@@ -93,7 +93,7 @@ async def create(data: MenuCreate, db: Session = Depends(get_db)) -> Menu:
 async def update(
         menu_id: UUID,
         data: MenuCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Menu:
     """
     Функция обновляет информацию о созданном меню, передавая информацию через\
@@ -117,7 +117,7 @@ async def update(
     tags=['menus'],
     name='delete_menu'
 )
-async def delete(menu_id: UUID, db: Session = Depends(get_db)) -> JSONResponse:
+async def delete(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Menu.
 

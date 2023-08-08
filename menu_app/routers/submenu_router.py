@@ -2,10 +2,10 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
-from menu_app.database import get_db
+from menu_app.database.postgres import db as get_db
 from menu_app.schemas.submenu import Submenu, SubmenuCreate
 from menu_app.services.submenu_service import service
 
@@ -24,7 +24,7 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
     name='get_list_submenu',
     response_model=list[Submenu]
 )
-async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
+async def get_list(db: AsyncSession = Depends(get_db)) -> list[Submenu]:
     """
     Функция получает из слоя service информацию о списке подменю и передает ее\
     в качестве ответа на get-запрос.
@@ -43,7 +43,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
     name='get_submenu',
     response_model=Submenu
 )
-async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
+async def get(submenu_id: UUID, db: AsyncSession = Depends(get_db)) -> Submenu:
     """
     Функция получает из слоя service информацию о конкретном подменю и\
     передает ее качестве ответа на get-запрос.
@@ -72,7 +72,7 @@ async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
 async def create(
         menu_id: UUID,
         data: SubmenuCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
     Функция создает новое подменю в базе данных с предоставленными данными.
@@ -99,7 +99,7 @@ async def create(
 async def update(
         data: SubmenuCreate,
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
     Функция обновляет информацию о созданном подменю, передавая информацию\
@@ -126,7 +126,7 @@ async def update(
 )
 async def delete(
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Submenu.

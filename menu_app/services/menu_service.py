@@ -1,13 +1,13 @@
 """Модуль сервисного слоя для модели Menu."""
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.menu_repository import MenuRepository, repository
 from menu_app.schemas.menu import Menu, MenuCreate
 
-from .config import BaseService
+from .base_service import BaseService
 
 
 class MenuService(BaseService):
@@ -18,7 +18,7 @@ class MenuService(BaseService):
         super().__init__()
         self.repository: MenuRepository = repository
 
-    async def get_list(self, db: Session) -> list[Menu]:
+    async def get_list(self, db: AsyncSession) -> list[Menu]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -33,7 +33,7 @@ class MenuService(BaseService):
             await self.set_cache('menu.get_list', result)
         return result
 
-    async def get(self, db: Session, menu_id: UUID) -> Menu:
+    async def get(self, db: AsyncSession, menu_id: UUID) -> Menu:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -49,7 +49,7 @@ class MenuService(BaseService):
             await self.set_cache(f'menu.get.{menu_id}', result)
         return result
 
-    async def create(self, db: Session, data: MenuCreate) -> Menu:
+    async def create(self, db: AsyncSession, data: MenuCreate) -> Menu:
         """
         Метод работает с методом создания нового экземпляра меню, удаляя из\
         кэша записи результатов запроса получения списка меню.
@@ -63,7 +63,7 @@ class MenuService(BaseService):
 
     async def update(
             self,
-            db: Session,
+            db: AsyncSession,
             data: MenuCreate,
             menu_id: UUID
     ) -> Menu:
@@ -79,7 +79,7 @@ class MenuService(BaseService):
         result = await self.repository.update(db, data, menu_id)
         return result
 
-    async def delete(self, db: Session, menu_id: UUID) -> JSONResponse:
+    async def delete(self, db: AsyncSession, menu_id: UUID) -> JSONResponse:
         """
         Метод удаляет весь кэш при удалении меню. Удаление всего кэша\
         обусловлено тем, что удаление отдельных сегментов увеличит нагрузку\

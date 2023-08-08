@@ -2,10 +2,10 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
-from menu_app.database import get_db
+from menu_app.database.postgres import db as get_db
 from menu_app.schemas.dish import Dish, DishCreate
 from menu_app.services.dish_service import service
 
@@ -24,7 +24,7 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
     ),
     response_model=list[Dish]
 )
-async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
+async def get_list(db: AsyncSession = Depends(get_db)) -> list[Dish]:
     """
     Функция получает из слоя service информацию о списке блюд и передает ее в\
     качестве ответа на get-запрос.
@@ -43,7 +43,7 @@ async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
     name='get_dish',
     response_model=Dish
 )
-async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
+async def get(dish_id: UUID, db: AsyncSession = Depends(get_db)) -> Dish:
     """
     Функция получает из слоя service информацию о конкретном блюде и передает\
     ее качестве ответа на get-запрос.
@@ -73,7 +73,7 @@ async def create(
         submenu_id: UUID,
         menu_id: UUID,
         data: DishCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция создает новое блюдо в базе данных с предоставленными данными.
@@ -101,7 +101,7 @@ async def create(
 async def update(
         dish_id: UUID,
         data: DishCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция обновляет информацию о созданном блюде, передавая информацию через\
@@ -127,7 +127,7 @@ async def update(
 )
 async def delete(
         dish_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Dish.
