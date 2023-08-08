@@ -18,22 +18,23 @@ class SubmenuService(BaseService):
         super().__init__()
         self.repository: SubmenuRepository = repository
 
-    async def get_list(self, db: Session) -> list[Submenu]:
+    async def get_list(self, db: Session, menu_id: UUID) -> list[Submenu]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
         запроса списка подменю, устанавливает кэш и передает данные в роутер.
 
         :param db: Экземпляром сеанса базы данных.
+        :param menu_id: Идентификатор меню.
         :return: Список подменю.
         """
-        result = await self.get_cache('submenu.get_list')
+        result = await self.get_cache(f'submenu.get_list.menu{menu_id}')
         if not result:
             result = await self.repository.get_list(db)
-            await self.set_cache('submenu.get_list', result)
+            await self.set_cache(f'submenu.get_list.menu{menu_id}', result)
         return result
 
-    async def get(self, db: Session, submenu_id: UUID) -> Submenu:
+    async def get(self, db: Session, submenu_id: UUID, menu_id: UUID) -> Submenu:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -42,12 +43,13 @@ class SubmenuService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param submenu_id: Идентификатор подменю.
+        :param menu_id: Идентификатор меню.
         :return: Экземпляр модели.
         """
-        result = await self.get_cache(f'submenu.get.{submenu_id}')
+        result = await self.get_cache(f'submenu.get.{submenu_id}.menu{menu_id}')
         if not result:
             result = await self.repository.get(db, submenu_id)
-            await self.set_cache(f'submenu.get.{submenu_id}', result)
+            await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
         return result
 
     async def create(
@@ -70,7 +72,7 @@ class SubmenuService(BaseService):
             [
                 'menu.get_list',
                 f'menu.get{menu_id}',
-                'submenu.get_list'
+                'submenu.get_list*'
             ]
         )
         return await self.repository.create(db, data, menu_id)
@@ -92,8 +94,8 @@ class SubmenuService(BaseService):
         """
         await self.delete_cache(
             [
-                'submenu.get_list',
-                f'submenu.get.{submenu_id}'
+                'submenu.get_list*',
+                f'submenu.get.{submenu_id}*'
             ]
         )
         result = await self.repository.update(db, data, submenu_id)
@@ -102,7 +104,8 @@ class SubmenuService(BaseService):
     async def delete(
             self,
             db: Session,
-            submenu_id: UUID
+            submenu_id: UUID,
+            menu_id: UUID
     ) -> JSONResponse:
         """
         Метод удаляет весь кэш при удалении подменю. Удаление всего кэша\
@@ -111,9 +114,15 @@ class SubmenuService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param submenu_id: Идентификатор удаляемого подменю.
+        :param menu_id: Идентификатор меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await self.flush_redis()
+        await self.delete_cache([
+            'submenu.get_list*'
+            'menu.get_list',
+            f'*{submenu_id}*',
+            f'*{menu_id}*'
+        ])
         result = await self.repository.remove(db, submenu_id)
         return result
 

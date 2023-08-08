@@ -18,22 +18,34 @@ class DishService(BaseService):
         super().__init__()
         self.repository: DishRepository = repository
 
-    async def get_list(self, db: Session) -> list[Dish]:
+    async def get_list(self, db: Session, submenu_id, menu_id) -> list[Dish]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
         запроса списка блюд, устанавливает кэш и передает данные в роутер.
 
         :param db: Экземпляром сеанса базы данных.
+        :param submenu_id: Идентификатор связанного подменю.
+        :param menu_id: Идентификатор связанного меню.
         :return: Список блюд.
         """
-        result = await self.get_cache('dish.get_list')
+        result = await self.get_cache(
+            f'dish.get_list.menu{menu_id}.submenu{submenu_id}'
+        )
         if not result:
             result = await self.repository.get_list(db)
-            await self.set_cache('dish.get_list', result)
+            await self.set_cache(
+                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
+                result
+            )
         return result
 
-    async def get(self, db: Session, dish_id: UUID) -> Dish:
+    async def get(
+            self,
+            db: Session,
+            dish_id: UUID,
+            submenu_id, menu_id
+    ) -> Dish:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -41,12 +53,19 @@ class DishService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param dish_id: Идентификатор блюда.
+        :param submenu_id: Идентификатор связанного подменю.
+        :param menu_id: Идентификатор связанного меню.
         :return: Экземпляр модели.
         """
-        result = await self.get_cache(f'dish.get.{dish_id}')
+        result = await self.get_cache(
+            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}'
+        )
         if not result:
             result = await self.repository.get(db, dish_id)
-            await self.set_cache(f'dish.get.{dish_id}', result)
+            await self.set_cache(
+                f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
+                result
+            )
         return result
 
     async def create(
@@ -70,10 +89,10 @@ class DishService(BaseService):
         await self.delete_cache(
             [
                 'menu.get_list',
-                f'menu.get{menu_id}',
                 'submenu.get_list',
-                f'submenu.get{submenu_id}',
-                'dish.get_list'
+                'dish.get_list',
+                f'*{submenu_id}*',
+                f'*{menu_id}*'
             ]
         )
         return await self.repository.create(db, data, submenu_id)
@@ -92,7 +111,7 @@ class DishService(BaseService):
         :param dish_id: Идентификатор блюда.
         :return: Экземпляр блюда с обновленными данными.
         """
-        await self.delete_cache(['dish.get_list', f'dish.get.{dish_id}'])
+        await self.delete_cache(['dish.get_list*', f'*{dish_id}*'])
         result = await self.repository.update(db, data, dish_id)
         return result
 
@@ -100,6 +119,8 @@ class DishService(BaseService):
             self,
             db: Session,
             dish_id: UUID,
+            submenu_id: UUID,
+            menu_id: UUID,
     ) -> JSONResponse:
         """
         Метод удаляет весь кэш при удалении блюда. Удаление всего кэша\
@@ -108,9 +129,17 @@ class DishService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param dish_id: Идентификатор удаляемого блюда.
+        :param submenu_id: Идентификатор связанного подменю.
+        :param menu_id: Идентификатор связанного меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await self.flush_redis()
+        await self.delete_cache([
+            'submenu.get_list*'
+            'menu.get_list',
+            f'*{dish_id}*',
+            f'*{submenu_id}*',
+            f'*{menu_id}*'
+        ])
         result = await self.repository.remove(db, dish_id)
         return result
 

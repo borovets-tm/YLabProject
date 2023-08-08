@@ -24,15 +24,19 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
     name='get_list_submenu',
     response_model=list[Submenu]
 )
-async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
+async def get_list(
+        menu_id: UUID,
+        db: Session = Depends(get_db)
+) -> list[Submenu]:
     """
     Функция получает из слоя service информацию о списке подменю и передает ее\
     в качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
+    :param menu_id: Идентификатор меню, к которому относится подменю.
     :return: Список подменю.
     """
-    return await service.get_list(db)
+    return await service.get_list(db, menu_id)
 
 
 @routers.get(
@@ -43,16 +47,21 @@ async def get_list(db: Session = Depends(get_db)) -> list[Submenu]:
     name='get_submenu',
     response_model=Submenu
 )
-async def get(submenu_id: UUID, db: Session = Depends(get_db)) -> Submenu:
+async def get(
+        submenu_id: UUID,
+        menu_id: UUID,
+        db: Session = Depends(get_db)
+) -> Submenu:
     """
     Функция получает из слоя service информацию о конкретном подменю и\
     передает ее качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
     :param submenu_id: Идентификатор подменю.
+    :param menu_id: Идентификатор меню, к которому относится подменю.
     :return: Информация о подменю с указанным идентификатором.
     """
-    return await service.get(db, submenu_id)
+    return await service.get(db, submenu_id, menu_id)
 
 
 @routers.post(
@@ -126,13 +135,15 @@ async def update(
 )
 async def delete(
         submenu_id: UUID,
+        menu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Submenu.
 
     :param submenu_id: Идентификатор подменю.
+    :param menu_id: Идентификатор меню, к которому относится подменю.
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, submenu_id)
+    return await service.delete(db, submenu_id, menu_id)

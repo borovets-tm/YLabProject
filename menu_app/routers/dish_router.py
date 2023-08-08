@@ -24,15 +24,21 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
     ),
     response_model=list[Dish]
 )
-async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
+async def get_list(
+        menu_id: UUID,
+        submenu_id: UUID,
+        db: Session = Depends(get_db)
+) -> list[Dish]:
     """
     Функция получает из слоя service информацию о списке блюд и передает ее в\
     качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
+    :param submenu_id: Идентификатор связанного подменю.
+    :param menu_id: Идентификатор связанного меню.
     :return: Список блюд.
     """
-    return await service.get_list(db)
+    return await service.get_list(db, submenu_id, menu_id)
 
 
 @routers.get(
@@ -43,16 +49,23 @@ async def get_list(db: Session = Depends(get_db)) -> list[Dish]:
     name='get_dish',
     response_model=Dish
 )
-async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
+async def get(
+        dish_id: UUID,
+        menu_id: UUID,
+        submenu_id: UUID,
+        db: Session = Depends(get_db)
+) -> Dish:
     """
     Функция получает из слоя service информацию о конкретном блюде и передает\
     ее качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
     :param dish_id: Идентификатор блюда.
+    :param submenu_id: Идентификатор связанного подменю.
+    :param menu_id: Идентификатор связанного меню.
     :return: Информация о блюде с указанным идентификатором.
     """
-    return await service.get(db, dish_id)
+    return await service.get(db, dish_id, submenu_id, menu_id)
 
 
 @routers.post(
@@ -61,9 +74,9 @@ async def get(dish_id: UUID, db: Session = Depends(get_db)) -> Dish:
     summary='Создаем блюдо',
     description=(
             'Необходимо указать название, описание и цену блюда, а также id '
-            'существующего подменю, к которому будет относиться блюдо. ID будет '
-            'сгенерирован системой. В ответе вернется информация о созданном '
-            'экземпляре.'
+            'существующего подменю, к которому будет относиться блюдо. ID '
+            'будет сгенерирован системой. В ответе вернется информация о '
+            'созданном экземпляре.'
     ),
     tags=['dishes'],
     name='create_dish',
@@ -127,13 +140,17 @@ async def update(
 )
 async def delete(
         dish_id: UUID,
+        menu_id: UUID,
+        submenu_id: UUID,
         db: Session = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Dish.
 
     :param dish_id: Идентификатор блюда.
+    :param submenu_id: Идентификатор связанного подменю.
+    :param menu_id: Идентификатор связанного меню.
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, dish_id)
+    return await service.delete(db, dish_id, submenu_id, menu_id)
