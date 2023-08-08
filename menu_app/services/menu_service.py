@@ -89,12 +89,9 @@ class MenuService(BaseService):
         :param menu_id: Идентификатор удаляемого меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await self.delete_cache(
-            [
-                'menu.get_list',
-                f'*{menu_id}*'
-            ]
-        )
+        delete_list = ['menu.get_list']
+        delete_list += await self.get_keys_by_patterns(f'*{menu_id}*')
+        await self.delete_cache(delete_list)
         result = await self.repository.remove(db, menu_id)
         return result
 

@@ -53,12 +53,11 @@ class BaseService:
         :return:None.
         """
         async with aioredis.from_url(self.url_redis) as redis:
-            keys = []
-            for pattern in request:
-                result = await redis.keys(pattern)
-                keys.extend(result)
-            if keys:
-                await redis.delete(*keys)
+            await redis.delete(*request)
+
+    async def get_keys_by_patterns(self, pattern: str) -> list:
+        async with aioredis.from_url(self.url_redis) as redis:
+            return await redis.keys(pattern)
 
     async def flush_redis(self) -> None:
         """

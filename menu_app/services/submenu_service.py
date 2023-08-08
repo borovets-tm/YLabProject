@@ -71,11 +71,14 @@ class SubmenuService(BaseService):
         await self.delete_cache(
             [
                 'menu.get_list',
-                f'menu.get{menu_id}',
-                'submenu.get_list*'
+                f'menu.get.{menu_id}',
+                f'submenu.get_list.menu{menu_id}',
             ]
         )
-        return await self.repository.create(db, data, menu_id)
+        result = await self.repository.create(db, data, menu_id)
+        submenu_id = result.id
+        await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
+        return result
 
     async def update(
             self,
@@ -92,13 +95,10 @@ class SubmenuService(BaseService):
         :param submenu_id: Идентификатор подменю.
         :return: Экземпляр подменю с обновленными данными.
         """
-        await self.delete_cache(
-            [
-                'submenu.get_list*',
-                f'submenu.get.{submenu_id}*'
-            ]
-        )
         result = await self.repository.update(db, data, submenu_id)
+        menu_id = result.menu_id
+        await self.delete_cache([f'submenu.get_list.menu{menu_id}'])
+        await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
         return result
 
     async def delete(
@@ -117,12 +117,14 @@ class SubmenuService(BaseService):
         :param menu_id: Идентификатор меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await self.delete_cache([
-            'submenu.get_list*'
+        delete_list = [
             'menu.get_list',
-            f'*{submenu_id}*',
-            f'*{menu_id}*'
-        ])
+            f'menu.get.{menu_id}',
+            f'submenu.get_list.menu{menu_id}',
+            f'submenu.get.{submenu_id}.menu{menu_id}'
+        ]
+        delete_list += await self.get_keys_by_patterns(f'*{submenu_id}*')
+        await self.delete_cache(delete_list)
         result = await self.repository.remove(db, submenu_id)
         return result
 

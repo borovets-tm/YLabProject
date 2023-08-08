@@ -89,19 +89,26 @@ class DishService(BaseService):
         await self.delete_cache(
             [
                 'menu.get_list',
-                'submenu.get_list',
-                'dish.get_list',
-                f'*{submenu_id}*',
-                f'*{menu_id}*'
+                f'menu.get.{menu_id}',
+                f'submenu.get_list.menu{menu_id}',
+                f'submenu.get.{submenu_id}.menu{menu_id}',
+                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
             ]
         )
-        return await self.repository.create(db, data, submenu_id)
+        result = await self.repository.create(db, data, submenu_id)
+        dish_id = result.id
+        await self.set_cache(
+            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
+            result
+        )
+        return result
 
     async def update(
             self,
             db: Session,
             data: DishCreate,
-            dish_id: UUID
+            dish_id: UUID,
+            menu_id: UUID
     ) -> Dish:
         """
         Метод удаляет из кэша записи запросов списка блюд и обновляемого блюда.
@@ -109,10 +116,16 @@ class DishService(BaseService):
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные для обновления.
         :param dish_id: Идентификатор блюда.
+        :param menu_id: Идентификатор связанного меню.
         :return: Экземпляр блюда с обновленными данными.
         """
-        await self.delete_cache(['dish.get_list*', f'*{dish_id}*'])
         result = await self.repository.update(db, data, dish_id)
+        submenu_id = result.submenu_id
+        await self.delete_cache([f'dish.get_list.menu{menu_id}.submenu{submenu_id}'])
+        await self.set_cache(
+            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
+            result
+        )
         return result
 
     async def delete(
@@ -133,13 +146,15 @@ class DishService(BaseService):
         :param menu_id: Идентификатор связанного меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        await self.delete_cache([
-            'submenu.get_list*'
+        delete_list = [
             'menu.get_list',
-            f'*{dish_id}*',
-            f'*{submenu_id}*',
-            f'*{menu_id}*'
-        ])
+            f'menu.get.{menu_id}',
+            f'submenu.get_list.menu{menu_id}',
+            f'submenu.get.{submenu_id}.menu{menu_id}',
+            f'dish.get_list.menu{menu_id}.submenu{submenu_id}'
+        ]
+        delete_list += await self.get_keys_by_patterns(f'*{dish_id}*')
+        await self.delete_cache(delete_list)
         result = await self.repository.remove(db, dish_id)
         return result
 

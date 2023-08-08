@@ -112,6 +112,7 @@ async def create(
     response_model=DishCreate
 )
 async def update(
+        menu_id: UUID,
         dish_id: UUID,
         data: DishCreate,
         db: Session = Depends(get_db)
@@ -120,12 +121,13 @@ async def update(
     Функция обновляет информацию о созданном блюде, передавая информацию через\
     слой service в слой repository, после чего возвращает ответ пользователю.
 
+    :param menu_id: Идентификатор связанного меню.
     :param dish_id: Идентификатор блюда.
     :param data: Обновляемая информация.
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о блюде.
     """
-    return await service.update(db, data, dish_id)
+    return await service.update(db, data, dish_id, menu_id)
 
 
 @routers.delete(
