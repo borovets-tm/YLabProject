@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import UUID, Column, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, relationship
 
-from menu_app.database import Base, engine
+from .database import Base
 
 
 class Menu(Base):
@@ -96,6 +96,3 @@ class Dish(Base):
         'Submenu',
         back_populates='dishes'
     )
-
-
-Base.metadata.create_all(bind=engine)

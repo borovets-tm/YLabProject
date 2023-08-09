@@ -3,14 +3,14 @@ CRUD."""
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy import Row, Sequence, delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.models import Submenu
 from menu_app.schemas.submenu import SubmenuCreate
 
-from .config import BaseRepository
+from .base_repository import BaseRepository
 
 
 class SubmenuRepository(BaseRepository):
@@ -21,28 +21,29 @@ class SubmenuRepository(BaseRepository):
         """Инициализация класса с указанием используемой модели."""
         self.model = Submenu
 
-    async def get_list(self, db: Session) -> list[Submenu]:
+    async def get_list(self, db: AsyncSession) -> Sequence:
         """
         Метод получения списка подменю.
 
         :param db: Экземпляром сеанса базы данных.
         :return: Список подменю.
         """
-        query = (
-            db
-            .query(
-                self.model.id,
-                self.model.title,
-                self.model.description,
-                func.count(self.model.dishes).label('dishes_count')
+        async with db as session:
+            query = (
+                select(
+                    self.model.id,
+                    self.model.title,
+                    self.model.description,
+                    func.count(self.model.dishes).label('dishes_count')
+                )
+                .outerjoin(self.model.dishes)
+                .group_by(self.model.id)
             )
-            .outerjoin(self.model.dishes)
-            .group_by(self.model.id)
-            .all()
-        )
-        return query
+            result = await session.execute(query)
+            curr = result.all()
+        return curr
 
-    async def get(self, db: Session, submenu_id: UUID) -> Submenu:
+    async def get(self, db: AsyncSession, submenu_id: UUID) -> Row:
         """
         Метод получения конкретного подменю.
 
@@ -50,26 +51,27 @@ class SubmenuRepository(BaseRepository):
         :param submenu_id: Идентификатор подменю.
         :return: Подменю с указанным идентификатором.
         """
-        result = (
-            db
-            .query(
-                self.model.id,
-                self.model.title,
-                self.model.description,
-                func.count(self.model.dishes).label('dishes_count')
+        async with db as session:
+            query = (
+                select(
+                    self.model.id,
+                    self.model.title,
+                    self.model.description,
+                    func.count(self.model.dishes).label('dishes_count')
+                )
+                .outerjoin(self.model.dishes)
+                .filter(self.model.id == submenu_id)
+                .group_by(self.model.id)
             )
-            .join(self.model.dishes, isouter=True)
-            .filter(self.model.id == submenu_id)
-            .group_by(self.model.id)
-            .first()
-        )
-        if not result:
+            result = await session.execute(query)
+            curr = result.first()
+        if not curr:
             raise HTTPException(status_code=404, detail='submenu not found')
-        return result
+        return curr
 
     async def create(
             self,
-            db: Session,
+            db: AsyncSession,
             data: SubmenuCreate,
             menu_id: UUID
     ) -> Submenu:
@@ -87,15 +89,12 @@ class SubmenuRepository(BaseRepository):
             description=data.description,
             menu_id=menu_id
         )
-        try:
-            await self.data_commit(db, submenu)
-        except Exception as e:
-            print(e)
+        await self.data_commit(db, submenu)
         return submenu
 
     async def update(
             self,
-            db: Session,
+            db: AsyncSession,
             data: SubmenuCreate,
             submenu_id: UUID
     ) -> Submenu:
@@ -107,13 +106,19 @@ class SubmenuRepository(BaseRepository):
         :param submenu_id: Идентификатор подменю.
         :return: Обновленная информация подменю.
         """
-        submenu = await self.get_entity(db, self.model, submenu_id)
-        submenu.title = data.title
-        submenu.description = data.description
-        await self.data_commit(db, submenu)
+        async with db as session:
+            query = (
+                select(self.model)
+                .filter(self.model.id == submenu_id)
+            )
+            result = await session.execute(query)
+            submenu = result.scalars().one()
+            submenu.title = data.title
+            submenu.description = data.description
+            await self.data_commit(db, submenu)
         return submenu
 
-    async def remove(self, db: Session, submenu_id: UUID) -> JSONResponse:
+    async def remove(self, db: AsyncSession, submenu_id: UUID) -> JSONResponse:
         """
         Метод удаляет подменю из базы данных.
 
@@ -122,7 +127,10 @@ class SubmenuRepository(BaseRepository):
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
-            await self.remove_entity(db, self.model, submenu_id)
+            query = delete(self.model).filter(self.model.id == submenu_id)
+            async with db as session:
+                await session.execute(query)
+                await session.commit()
             return JSONResponse(
                 status_code=200,
                 content={

@@ -1,36 +1,37 @@
-"""В модуле реализовано конфигурирование и взаимодействие с базой данных."""
-from os import getenv
-from typing import Generator
-
-from dotenv import load_dotenv
-from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv()
-POSTGRES_USER: str | None = getenv('POSTGRES_USER', 'default')
-POSTGRES_PASSWORD: str | None = getenv('POSTGRES_PASSWORD')
-PORT: str | None = getenv('PORT')
-HOST_DB: str | None = getenv('HOST_DB')
-USED_DB: str | None = getenv('POSTGRES_DB')
+from menu_app.config import config
 
-SQLALCHEMY_URL: str = (
-    f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}'
-    f'@{HOST_DB}:{PORT}/{USED_DB}'
-)
 
-engine: Engine = create_engine(SQLALCHEMY_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def get_connection_string(driver: str = 'asyncpg') -> str:
+    sqlalchemy_url: str = (
+        f'postgresql+{driver}://{config.POSTGRES_USER}:'
+        f'{config.POSTGRES_PASSWORD}@{config.HOST_DB}:'
+        f'{config.PORT}/{config.POSTGRES_DB}'
+    )
+    return sqlalchemy_url
+
+
 Base = declarative_base()
+async_engine = create_async_engine(get_connection_string())
 
 
-def get_db() -> Generator:
-    """
-    Генератор сессии взаимодействия с базой данных.
+async def get_db():
+    async_session = sessionmaker(
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+        bind=async_engine,
+        class_=AsyncSession,
+    )
 
-    :return: Экземпляром сеанса базы данных.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with async_session() as session:
+        await session.begin()
+
+        yield session
+
+        await session.rollback()

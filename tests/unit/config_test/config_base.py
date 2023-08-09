@@ -1,7 +1,6 @@
 from uuid import UUID
 
-from fastapi.testclient import TestClient
-from httpx import Response
+from httpx import AsyncClient, Response
 
 from menu_app.main import app, router
 
@@ -9,7 +8,7 @@ from menu_app.main import app, router
 class TestReverseClient:
 
     def __init__(self):
-        self.client = TestClient(app=app)
+        self.client = AsyncClient(app=app, base_url='http://localhost')
         self.routers = router
 
     async def reverse(self, url_name: str, **url_path) -> str:
@@ -17,19 +16,19 @@ class TestReverseClient:
 
     async def get(self, url_name: str, **url_path):
         url = await self.reverse(url_name, **url_path)
-        return self.client.get(url)
+        return await self.client.get(url)
 
     async def post(self, url_name: str, data: dict, **url_path):
         url = await self.reverse(url_name, **url_path)
-        return self.client.post(url, json=data)
+        return await self.client.post(url, json=data)
 
     async def patch(self, url_name: str, data: dict, **url_path):
         url = await self.reverse(url_name, **url_path)
-        return self.client.patch(url, json=data)
+        return await self.client.patch(url, json=data)
 
     async def delete(self, url_name: str, **url_path):
         url = await self.reverse(url_name, **url_path)
-        return self.client.delete(url)
+        return await self.client.delete(url)
 
 
 class BaseTest:

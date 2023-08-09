@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.submenu_repository import SubmenuRepository, repository
 from menu_app.schemas.submenu import Submenu, SubmenuCreate
 
-from .config import BaseService
+from .base_service import BaseService
 
 
 class SubmenuService(BaseService):

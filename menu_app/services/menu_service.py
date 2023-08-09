@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.menu_repository import MenuRepository, repository
 from menu_app.schemas.menu import Menu, MenuCreate
 
-from .config import BaseService
+from .base_service import BaseService
 
 
 class MenuService(BaseService):

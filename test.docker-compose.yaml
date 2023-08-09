@@ -1,11 +1,15 @@
 version: "3.9"
 
 services:
-  db:
+  test_db:
     image: postgres:15.1-alpine
-    container_name: db
-    env_file:
-      - .env
+    container_name: test_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_DB}
+      PORT: ${PORT}
+      HOST_DB: ${TEST_HOST_DB}
     ports:
       - "5432:5432"
   redis:
@@ -22,7 +26,7 @@ services:
     env_file:
       - .env
     external_links:
-      - db:db
+      - test_db:test_db
     ports:
       - "8000:8000"
     command:

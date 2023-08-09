@@ -3,7 +3,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 
 from .routers import dish_router, menu_router, submenu_router
-from .services.config import BaseService
+from .services.base_service import BaseService
 
 app: FastAPI = FastAPI()
 router: APIRouter = APIRouter(prefix='/api/v1')

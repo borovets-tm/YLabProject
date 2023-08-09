@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from menu_app.repositories.dish_repository import DishRepository, repository
 from menu_app.schemas.dish import Dish, DishCreate
 
-from .config import BaseService
+from .base_service import BaseService
 
 
 class DishService(BaseService):
