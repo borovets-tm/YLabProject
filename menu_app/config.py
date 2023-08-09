@@ -13,6 +13,7 @@ class Config(ABC):
     HOST_DB: str | None = getenv('HOST_DB')
     POSTGRES_DB: str | None = getenv('POSTGRES_DB')
     TEST_DB: str | None = getenv('TEST_DB')
+    TEST_HOST_DB: str | None = getenv('TEST_HOST_DB')
 
 
 config = Config()

@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import UUID, Column, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, relationship
 
-from menu_app.database.postgres import Base, async_engine
+from .database import Base
 
 
 class Menu(Base):
@@ -96,9 +96,3 @@ class Dish(Base):
         'Submenu',
         back_populates='dishes'
     )
-
-
-async def init_models():
-    async with async_engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)

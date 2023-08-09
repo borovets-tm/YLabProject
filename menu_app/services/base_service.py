@@ -55,6 +55,10 @@ class BaseService:
         async with aioredis.from_url(self.url_redis) as redis:
             await redis.delete(*request)
 
+    async def get_keys_by_patterns(self, pattern: str) -> list:
+        async with aioredis.from_url(self.url_redis) as redis:
+            return await redis.keys(pattern)
+
     async def flush_redis(self) -> None:
         """
         Очищает весь кэш из redis.

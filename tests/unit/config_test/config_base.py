@@ -5,46 +5,30 @@ from httpx import AsyncClient, Response
 from menu_app.main import app, router
 
 
-def get_client():
-    async_client = AsyncClient(app=app, base_url='http://test')
-    try:
-        yield async_client
-    finally:
-        async_client.aclose()
-
-
 class TestReverseClient:
-    def __init__(self, client=get_client):
-        self.client = client
-        self.routers = router
 
-    # async def __call__(self) -> AsyncIterator[AsyncClient]:
-    #     self.client: AsyncClient = AsyncClient(app=app)
-    #     async with self.client as session:
-    #         yield session
+    def __init__(self):
+        self.client = AsyncClient(app=app, base_url='http://localhost')
+        self.routers = router
 
     async def reverse(self, url_name: str, **url_path) -> str:
         return self.routers.url_path_for(url_name, **url_path)
 
     async def get(self, url_name: str, **url_path):
         url = await self.reverse(url_name, **url_path)
-        async with self.client() as client:
-            return await client.get(url)
+        return await self.client.get(url)
 
     async def post(self, url_name: str, data: dict, **url_path):
         url = await self.reverse(url_name, **url_path)
-        async with self.client() as client:
-            return await client.post(url, json=data)
+        return await self.client.post(url, json=data)
 
     async def patch(self, url_name: str, data: dict, **url_path):
         url = await self.reverse(url_name, **url_path)
-        async with self.client() as client:
-            return await client.patch(url, json=data)
+        return await self.client.patch(url, json=data)
 
     async def delete(self, url_name: str, **url_path):
         url = await self.reverse(url_name, **url_path)
-        async with self.client() as client:
-            return await client.delete(url)
+        return await self.client.delete(url)
 
 
 class BaseTest:
