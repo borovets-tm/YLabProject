@@ -3,11 +3,8 @@ import pickle
 from typing import Any
 
 import aioredis
-from celery import Celery
 
 from menu_app.config import config
-
-celery_app = Celery('menu_app', broker=f'redis://{config.REDIS_HOST}')
 
 
 class BaseService:
@@ -15,8 +12,8 @@ class BaseService:
 
     def __init__(self):
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
-        self.url_redis = f'redis://{config.REDIS_HOST}/1'
-        self.cache_lifetime = 60
+        self.url_redis = f'redis://{config.REDIS_HOST}'
+        self.cache_lifetime = 60 * 10
 
     async def set_cache(self, request: str, response: Any) -> None:
         """

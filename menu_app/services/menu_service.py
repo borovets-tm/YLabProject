@@ -76,8 +76,7 @@ class MenuService(BaseService):
         :return: Экземпляр меню с обновленными данными.
         """
         await self.delete_cache(['menu.get_list', f'menu.get.{menu_id}'])
-        result = await self.repository.update(db, data, menu_id)
-        return result
+        return await self.repository.update(db, data, menu_id)
 
     async def delete(self, db: AsyncSession, menu_id: UUID) -> JSONResponse:
         """

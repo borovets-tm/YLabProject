@@ -18,7 +18,12 @@ class DishService(BaseService):
         super().__init__()
         self.repository: DishRepository = repository
 
-    async def get_list(self, db: AsyncSession, submenu_id, menu_id) -> list[Dish]:
+    async def get_list(
+            self,
+            db: AsyncSession,
+            submenu_id,
+            menu_id
+    ) -> list[Dish]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -95,13 +100,7 @@ class DishService(BaseService):
                 f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
             ]
         )
-        result = await self.repository.create(db, data, submenu_id)
-        dish_id = result.id
-        await self.set_cache(
-            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
-            result
-        )
-        return result
+        return await self.repository.create(db, data, submenu_id)
 
     async def update(
             self,
@@ -121,10 +120,11 @@ class DishService(BaseService):
         """
         result = await self.repository.update(db, data, dish_id)
         submenu_id = result.submenu_id
-        await self.delete_cache([f'dish.get_list.menu{menu_id}.submenu{submenu_id}'])
-        await self.set_cache(
-            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
-            result
+        await self.delete_cache(
+            [
+                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
+                f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}'
+            ]
         )
         return result
 

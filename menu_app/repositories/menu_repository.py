@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import coalesce
 from starlette.responses import JSONResponse
 
-from menu_app.models import Dish, Menu, Submenu
+from menu_app.models import Menu, Submenu
 from menu_app.schemas.menu import MenuCreate
 
 from .base_repository import BaseRepository
@@ -31,10 +31,11 @@ class MenuRepository(BaseRepository):
             subquery = (
                 select(
                     Submenu.menu_id,
-                    func.count(Dish.id).label('dishes_count')
+                    Submenu.id.label('submenu_id'),
+                    func.count(Submenu.dishes).label('dishes_count')
                 )
-                .outerjoin(Dish, Submenu.id == Dish.submenu_id)
-                .group_by(Submenu.menu_id)
+                .outerjoin(Submenu.dishes)
+                .group_by(Submenu.menu_id, Submenu.id)
                 .subquery('subquery')
             )
             query = (
@@ -42,13 +43,15 @@ class MenuRepository(BaseRepository):
                     self.model.id,
                     self.model.title,
                     self.model.description,
-                    func.count(subquery.c.menu_id).label('submenus_count'),
-                    coalesce(subquery.c.dishes_count, 0).label('dishes_count')
+                    func.count(subquery.c.submenu_id).label('submenus_count'),
+                    func.sum(
+                        coalesce(subquery.c.dishes_count, 0)
+                    ).label('dishes_count')
                 )
                 .outerjoin(
                     subquery, self.model.id == subquery.c.menu_id
                 )
-                .group_by(self.model.id, subquery.c.dishes_count)
+                .group_by(self.model.id)
             )
             result = await session.execute(query)
             curr = result.all()
@@ -66,26 +69,29 @@ class MenuRepository(BaseRepository):
             subquery = (
                 select(
                     Submenu.menu_id,
-                    func.count(Dish.id).label('dishes_count')
+                    Submenu.id.label('submenu_id'),
+                    func.count(Submenu.dishes).label('dishes_count')
                 )
-                .join(Dish, Submenu.id == Dish.submenu_id, isouter=True)
+                .outerjoin(Submenu.dishes)
                 .filter(Submenu.menu_id == menu_id)
-                .group_by(Submenu.menu_id)
-                .subquery('submenus')
+                .group_by(Submenu.menu_id, Submenu.id)
+                .subquery('subquery')
             )
             query = (
                 select(
                     self.model.id,
                     self.model.title,
                     self.model.description,
-                    func.count(subquery.c.menu_id).label('submenus_count'),
-                    coalesce(subquery.c.dishes_count, 0).label('dishes_count')
+                    func.count(subquery.c.submenu_id).label('submenus_count'),
+                    func.sum(
+                        coalesce(subquery.c.dishes_count, 0)
+                    ).label('dishes_count')
                 )
                 .outerjoin(
                     subquery, self.model.id == subquery.c.menu_id
                 )
                 .filter(self.model.id == menu_id)
-                .group_by(self.model.id, subquery.c.dishes_count)
+                .group_by(self.model.id)
             )
             result = await session.execute(query)
             curr = result.first()

@@ -34,7 +34,12 @@ class SubmenuService(BaseService):
             await self.set_cache(f'submenu.get_list.menu{menu_id}', result)
         return result
 
-    async def get(self, db: AsyncSession, submenu_id: UUID, menu_id: UUID) -> Submenu:
+    async def get(
+            self,
+            db: AsyncSession,
+            submenu_id: UUID,
+            menu_id: UUID
+    ) -> Submenu:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -46,10 +51,15 @@ class SubmenuService(BaseService):
         :param menu_id: Идентификатор меню.
         :return: Экземпляр модели.
         """
-        result = await self.get_cache(f'submenu.get.{submenu_id}.menu{menu_id}')
+        result = await self.get_cache(
+            f'submenu.get.{submenu_id}.menu{menu_id}'
+        )
         if not result:
             result = await self.repository.get(db, submenu_id)
-            await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
+            await self.set_cache(
+                f'submenu.get.{submenu_id}.menu{menu_id}',
+                result
+            )
         return result
 
     async def create(
@@ -75,10 +85,7 @@ class SubmenuService(BaseService):
                 f'submenu.get_list.menu{menu_id}',
             ]
         )
-        result = await self.repository.create(db, data, menu_id)
-        submenu_id = result.id
-        await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
-        return result
+        return await self.repository.create(db, data, menu_id)
 
     async def update(
             self,
@@ -97,8 +104,12 @@ class SubmenuService(BaseService):
         """
         result = await self.repository.update(db, data, submenu_id)
         menu_id = result.menu_id
-        await self.delete_cache([f'submenu.get_list.menu{menu_id}'])
-        await self.set_cache(f'submenu.get.{submenu_id}.menu{menu_id}', result)
+        await self.delete_cache(
+            [
+                f'submenu.get_list.menu{menu_id}',
+                f'submenu.get.{submenu_id}.menu{menu_id}'
+            ]
+        )
         return result
 
     async def delete(
