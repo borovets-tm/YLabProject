@@ -1,14 +1,13 @@
 """Модуль используется для инициализации методов кэширования в слое."""
 import pickle
-from os import getenv
 from typing import Any
 
 import aioredis
-from dotenv import load_dotenv
+from celery import Celery
 
-load_dotenv()
+from menu_app.config import config
 
-REDIS_HOST: str = getenv('REDIS_HOST', 'localhost')
+celery_app = Celery('menu_app', broker=f'redis://{config.REDIS_HOST}')
 
 
 class BaseService:
@@ -16,7 +15,7 @@ class BaseService:
 
     def __init__(self):
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
-        self.url_redis = f'redis://{REDIS_HOST}/1'
+        self.url_redis = f'redis://{config.REDIS_HOST}/1'
         self.cache_lifetime = 60
 
     async def set_cache(self, request: str, response: Any) -> None:

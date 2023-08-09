@@ -1,7 +1,7 @@
 """Модуль сервисного слоя для модели Dish."""
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.dish_repository import DishRepository, repository
@@ -18,7 +18,7 @@ class DishService(BaseService):
         super().__init__()
         self.repository: DishRepository = repository
 
-    async def get_list(self, db: Session, submenu_id, menu_id) -> list[Dish]:
+    async def get_list(self, db: AsyncSession, submenu_id, menu_id) -> list[Dish]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -42,7 +42,7 @@ class DishService(BaseService):
 
     async def get(
             self,
-            db: Session,
+            db: AsyncSession,
             dish_id: UUID,
             submenu_id, menu_id
     ) -> Dish:
@@ -70,7 +70,7 @@ class DishService(BaseService):
 
     async def create(
             self,
-            db: Session,
+            db: AsyncSession,
             data: DishCreate,
             submenu_id: UUID,
             menu_id: UUID,
@@ -105,7 +105,7 @@ class DishService(BaseService):
 
     async def update(
             self,
-            db: Session,
+            db: AsyncSession,
             data: DishCreate,
             dish_id: UUID,
             menu_id: UUID
@@ -130,7 +130,7 @@ class DishService(BaseService):
 
     async def delete(
             self,
-            db: Session,
+            db: AsyncSession,
             dish_id: UUID,
             submenu_id: UUID,
             menu_id: UUID,

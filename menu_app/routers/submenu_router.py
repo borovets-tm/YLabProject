@@ -2,7 +2,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
@@ -26,7 +26,7 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
 )
 async def get_list(
         menu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> list[Submenu]:
     """
     Функция получает из слоя service информацию о списке подменю и передает ее\
@@ -50,7 +50,7 @@ async def get_list(
 async def get(
         submenu_id: UUID,
         menu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
     Функция получает из слоя service информацию о конкретном подменю и\
@@ -81,7 +81,7 @@ async def get(
 async def create(
         menu_id: UUID,
         data: SubmenuCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
     Функция создает новое подменю в базе данных с предоставленными данными.
@@ -108,7 +108,7 @@ async def create(
 async def update(
         data: SubmenuCreate,
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
     Функция обновляет информацию о созданном подменю, передавая информацию\
@@ -136,7 +136,7 @@ async def update(
 async def delete(
         submenu_id: UUID,
         menu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Submenu.

@@ -1,7 +1,7 @@
 """Модуль сервисного слоя для модели Submenu."""
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.submenu_repository import SubmenuRepository, repository
@@ -18,7 +18,7 @@ class SubmenuService(BaseService):
         super().__init__()
         self.repository: SubmenuRepository = repository
 
-    async def get_list(self, db: Session, menu_id: UUID) -> list[Submenu]:
+    async def get_list(self, db: AsyncSession, menu_id: UUID) -> list[Submenu]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -34,7 +34,7 @@ class SubmenuService(BaseService):
             await self.set_cache(f'submenu.get_list.menu{menu_id}', result)
         return result
 
-    async def get(self, db: Session, submenu_id: UUID, menu_id: UUID) -> Submenu:
+    async def get(self, db: AsyncSession, submenu_id: UUID, menu_id: UUID) -> Submenu:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -54,7 +54,7 @@ class SubmenuService(BaseService):
 
     async def create(
             self,
-            db: Session,
+            db: AsyncSession,
             data: SubmenuCreate,
             menu_id: UUID
     ) -> Submenu:
@@ -82,7 +82,7 @@ class SubmenuService(BaseService):
 
     async def update(
             self,
-            db: Session,
+            db: AsyncSession,
             data: SubmenuCreate,
             submenu_id: UUID
     ) -> Submenu:
@@ -103,7 +103,7 @@ class SubmenuService(BaseService):
 
     async def delete(
             self,
-            db: Session,
+            db: AsyncSession,
             submenu_id: UUID,
             menu_id: UUID
     ) -> JSONResponse:

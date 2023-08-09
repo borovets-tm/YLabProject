@@ -30,7 +30,7 @@
     ```
 6. Установите poetry:
     ```shell
-    pip "poetry==1.5.1"
+    pip install poetry
     ```
 7. Установите зависимости:
     ```shell

@@ -1,25 +1,20 @@
 """Модуль запуска приложения."""
 from fastapi import APIRouter, FastAPI
-from fastapi.openapi.utils import get_openapi
 
 from .routers import dish_router, menu_router, submenu_router
 from .services.base_service import BaseService
 
-app: FastAPI = FastAPI()
+app: FastAPI = FastAPI(
+    title='Menu API',
+    version='1.0',
+    description='Post information about the restaurant menu online',
+)
 router: APIRouter = APIRouter(prefix='/api/v1')
 
 submenu_router.routers.include_router(dish_router.routers)
 menu_router.routers.include_router(submenu_router.routers)
 router.include_router(menu_router.routers)
 app.include_router(router)
-
-openapi_schema = get_openapi(
-    title='The Menu App Info API',
-    version='1.0',
-    description='Post information about the restaurant menu online',
-    routes=router.routes
-)
-app.openapi_schema = openapi_schema
 
 
 @app.on_event('shutdown')

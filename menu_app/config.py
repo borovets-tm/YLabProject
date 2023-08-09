@@ -14,6 +14,7 @@ class Config(ABC):
     POSTGRES_DB: str | None = getenv('POSTGRES_DB')
     TEST_DB: str | None = getenv('TEST_DB')
     TEST_HOST_DB: str | None = getenv('TEST_HOST_DB')
+    REDIS_HOST: str | None = getenv('REDIS_HOST')
 
 
 config = Config()

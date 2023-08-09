@@ -2,7 +2,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
@@ -27,7 +27,7 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
 async def get_list(
         menu_id: UUID,
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> list[Dish]:
     """
     Функция получает из слоя service информацию о списке блюд и передает ее в\
@@ -53,7 +53,7 @@ async def get(
         dish_id: UUID,
         menu_id: UUID,
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция получает из слоя service информацию о конкретном блюде и передает\
@@ -86,7 +86,7 @@ async def create(
         submenu_id: UUID,
         menu_id: UUID,
         data: DishCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция создает новое блюдо в базе данных с предоставленными данными.
@@ -115,7 +115,7 @@ async def update(
         menu_id: UUID,
         dish_id: UUID,
         data: DishCreate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция обновляет информацию о созданном блюде, передавая информацию через\
@@ -144,7 +144,7 @@ async def delete(
         dish_id: UUID,
         menu_id: UUID,
         submenu_id: UUID,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Dish.
