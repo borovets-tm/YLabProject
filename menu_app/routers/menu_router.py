@@ -1,7 +1,7 @@
 """Модуль с роутерами для модели Menu."""
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -43,16 +43,21 @@ async def get_list(db: AsyncSession = Depends(get_db)) -> list[Menu]:
     name='get_menu',
     response_model=Menu,
 )
-async def get(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> Menu:
+async def get(
+        request: Request,
+        menu_id: UUID,
+        db: AsyncSession = Depends(get_db)
+) -> Menu:
     """
     Функция получает из слоя service информацию о конкретном меню и передает\
     ее качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
     :param menu_id: Идентификатор меню.
+    :param request: Запрос.
     :return: Информация о меню с указанным идентификатором.
     """
-    return await service.get(db, menu_id)
+    return await service.get(db, menu_id, request.path_params)
 
 
 @routers.post(
@@ -91,6 +96,7 @@ async def create(data: MenuCreate, db: AsyncSession = Depends(get_db)) -> Menu:
     response_model=MenuCreate
 )
 async def update(
+        request: Request,
         menu_id: UUID,
         data: MenuCreate,
         db: AsyncSession = Depends(get_db)
@@ -99,12 +105,13 @@ async def update(
     Функция обновляет информацию о созданном меню, передавая информацию через\
     слой service в слой repository, после чего возвращает ответ пользователю.
 
+    :param request: Запрос.
     :param menu_id: Идентификатор меню.
     :param data: Обновляемая информация.
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о меню.
     """
-    return await service.update(db, data, menu_id)
+    return await service.update(db, data, menu_id, request.path_params)
 
 
 @routers.delete(
@@ -117,7 +124,10 @@ async def update(
     tags=['menus'],
     name='delete_menu'
 )
-async def delete(menu_id: UUID, db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def delete(
+        menu_id: UUID,
+        db: AsyncSession = Depends(get_db)
+) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Menu.
 

@@ -21,8 +21,7 @@ class DishService(BaseService):
     async def get_list(
             self,
             db: AsyncSession,
-            submenu_id,
-            menu_id
+            path_params: dict
     ) -> list[Dish]:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
@@ -30,17 +29,17 @@ class DishService(BaseService):
         запроса списка блюд, устанавливает кэш и передает данные в роутер.
 
         :param db: Экземпляром сеанса базы данных.
-        :param submenu_id: Идентификатор связанного подменю.
-        :param menu_id: Идентификатор связанного меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Список блюд.
         """
+        s: dict = await self.get_lazy_s(path_params)
         result = await self.get_cache(
-            f'dish.get_list.menu{menu_id}.submenu{submenu_id}'
+            self.get_list_dish % s
         )
         if not result:
             result = await self.repository.get_list(db)
             await self.set_cache(
-                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
+                self.get_list_dish % s,
                 result
             )
         return result
@@ -49,7 +48,7 @@ class DishService(BaseService):
             self,
             db: AsyncSession,
             dish_id: UUID,
-            submenu_id, menu_id
+            path_params: dict
     ) -> Dish:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
@@ -58,17 +57,17 @@ class DishService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param dish_id: Идентификатор блюда.
-        :param submenu_id: Идентификатор связанного подменю.
-        :param menu_id: Идентификатор связанного меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Экземпляр модели.
         """
+        s: dict = await self.get_lazy_s(path_params)
         result = await self.get_cache(
-            f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}'
+            self.get_dish % s
         )
         if not result:
             result = await self.repository.get(db, dish_id)
             await self.set_cache(
-                f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}',
+                self.get_dish % s,
                 result
             )
         return result
@@ -78,26 +77,27 @@ class DishService(BaseService):
             db: AsyncSession,
             data: DishCreate,
             submenu_id: UUID,
-            menu_id: UUID,
+            path_params: dict
     ) -> Dish:
         """
         Метод работает с методом создания нового экземпляра блюда, удаляя из\
-        кэша записи результатов запросов: получения списков меню, подменю и \
-        блюд; информации о меню и подменю, связанных с блюдом.
+        кэша записи результатов запросов: получения списков меню, под-меню и \
+        блюд; информации о меню и под-меню, связанных с блюдом.
 
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные для создания нового экземпляра.
-        :param submenu_id: Идентификатор подменю.
-        :param menu_id: Идентификатор меню.
+        :param submenu_id: Идентификатор под-меню, к которому относится блюдо.
+        :param path_params: Словарь со списком параметров пути.
         :return: Экземпляр созданного блюда.
         """
+        s: dict = await self.get_lazy_s(path_params)
         await self.delete_cache(
             [
-                'menu.get_list',
-                f'menu.get.{menu_id}',
-                f'submenu.get_list.menu{menu_id}',
-                f'submenu.get.{submenu_id}.menu{menu_id}',
-                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
+                self.get_list_menu,
+                self.get_menu % s,
+                self.get_list_submenu % s,
+                self.get_submenu % s,
+                self.get_list_dish % s,
             ]
         )
         return await self.repository.create(db, data, submenu_id)
@@ -107,7 +107,7 @@ class DishService(BaseService):
             db: AsyncSession,
             data: DishCreate,
             dish_id: UUID,
-            menu_id: UUID
+            path_params: dict
     ) -> Dish:
         """
         Метод удаляет из кэша записи запросов списка блюд и обновляемого блюда.
@@ -115,25 +115,23 @@ class DishService(BaseService):
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные для обновления.
         :param dish_id: Идентификатор блюда.
-        :param menu_id: Идентификатор связанного меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Экземпляр блюда с обновленными данными.
         """
-        result = await self.repository.update(db, data, dish_id)
-        submenu_id = result.submenu_id
+        s: dict = await self.get_lazy_s(path_params)
         await self.delete_cache(
             [
-                f'dish.get_list.menu{menu_id}.submenu{submenu_id}',
-                f'dish.get.{dish_id}.menu{menu_id}.submenu{submenu_id}'
+                self.get_list_dish % s,
+                self.get_dish % s
             ]
         )
-        return result
+        return await self.repository.update(db, data, dish_id)
 
     async def delete(
             self,
             db: AsyncSession,
             dish_id: UUID,
-            submenu_id: UUID,
-            menu_id: UUID,
+            path_params: dict
     ) -> JSONResponse:
         """
         Метод удаляет весь кэш при удалении блюда. Удаление всего кэша\
@@ -142,16 +140,16 @@ class DishService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param dish_id: Идентификатор удаляемого блюда.
-        :param submenu_id: Идентификатор связанного подменю.
-        :param menu_id: Идентификатор связанного меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Ответ об успехе или неудачи удаления.
         """
+        s: dict = await self.get_lazy_s(path_params)
         delete_list = [
-            'menu.get_list',
-            f'menu.get.{menu_id}',
-            f'submenu.get_list.menu{menu_id}',
-            f'submenu.get.{submenu_id}.menu{menu_id}',
-            f'dish.get_list.menu{menu_id}.submenu{submenu_id}'
+            self.get_list_menu,
+            self.get_menu % s,
+            self.get_list_submenu % s,
+            self.get_submenu % s,
+            self.get_list_dish % s
         ]
         delete_list += await self.get_keys_by_patterns(f'*{dish_id}*')
         await self.delete_cache(delete_list)

@@ -14,6 +14,21 @@ class BaseService:
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
         self.url_redis = f'redis://{config.REDIS_HOST}'
         self.cache_lifetime = 60 * 10
+        self.get_list_menu = 'get_list.menu'
+        self.get_menu = 'get.menu.%(menu_id)s'
+        self.get_list_submenu = self.get_list_menu + '.%(menu_id)s.submenu'
+        self.get_submenu = self.get_menu + '.submenu.%(submenu_id)s'
+        self.get_list_dish = self.get_list_submenu + '.%(submenu_id)s.dish'
+        self.get_dish = self.get_submenu + '.dish.%(dish_id)s'
+
+    @classmethod
+    async def get_lazy_s(cls, path_params: dict) -> dict:
+        s = {
+            'menu_id': path_params.get('menu_id', ''),
+            'submenu_id': path_params.get('submenu_id', ''),
+            'dish_id': path_params.get('dish_id', '')
+        }
+        return s
 
     async def set_cache(self, request: str, response: Any) -> None:
         """

@@ -27,13 +27,18 @@ class MenuService(BaseService):
         :param db: Экземпляром сеанса базы данных.
         :return: Список меню.
         """
-        result = await self.get_cache('menu.get_list')
+        result = await self.get_cache(self.get_list_menu)
         if not result:
             result = await self.repository.get_list(db)
-            await self.set_cache('menu.get_list', result)
+            await self.set_cache(self.get_list_menu, result)
         return result
 
-    async def get(self, db: AsyncSession, menu_id: UUID) -> Menu:
+    async def get(
+            self,
+            db: AsyncSession,
+            menu_id: UUID,
+            path_params: dict
+    ) -> Menu:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -41,12 +46,19 @@ class MenuService(BaseService):
 
         :param db: Экземпляром сеанса базы данных.
         :param menu_id: Идентификатор меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Экземпляр модели.
         """
-        result = await self.get_cache(f'menu.get.{menu_id}')
+        s: dict = await self.get_lazy_s(path_params)
+        result = await self.get_cache(
+            self.get_menu % s
+        )
         if not result:
             result = await self.repository.get(db, menu_id)
-            await self.set_cache(f'menu.get.{menu_id}', result)
+            await self.set_cache(
+                self.get_menu % s,
+                result
+            )
         return result
 
     async def create(self, db: AsyncSession, data: MenuCreate) -> Menu:
@@ -58,14 +70,15 @@ class MenuService(BaseService):
         :param data: Данные для создания нового экземпляра.
         :return: Экземпляр созданного меню.
         """
-        await self.delete_cache(['menu.get_list'])
+        await self.delete_cache([self.get_list_menu])
         return await self.repository.create(db, data)
 
     async def update(
             self,
             db: AsyncSession,
             data: MenuCreate,
-            menu_id: UUID
+            menu_id: UUID,
+            path_params: dict
     ) -> Menu:
         """
         Метод удаляет из кэша записи запросов списка меню и обновляемого меню.
@@ -73,9 +86,16 @@ class MenuService(BaseService):
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные для обновления.
         :param menu_id: Идентификатор меню.
+        :param path_params: Словарь со списком параметров пути.
         :return: Экземпляр меню с обновленными данными.
         """
-        await self.delete_cache(['menu.get_list', f'menu.get.{menu_id}'])
+        s: dict = await self.get_lazy_s(path_params)
+        await self.delete_cache(
+            [
+                self.get_list_menu,
+                self.get_menu % s
+            ]
+        )
         return await self.repository.update(db, data, menu_id)
 
     async def delete(self, db: AsyncSession, menu_id: UUID) -> JSONResponse:
@@ -88,7 +108,7 @@ class MenuService(BaseService):
         :param menu_id: Идентификатор удаляемого меню.
         :return: Ответ об успехе или неудачи удаления.
         """
-        delete_list = ['menu.get_list']
+        delete_list = [self.get_list_menu]
         delete_list += await self.get_keys_by_patterns(f'*{menu_id}*')
         await self.delete_cache(delete_list)
         result = await self.repository.remove(db, menu_id)

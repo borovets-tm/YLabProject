@@ -72,7 +72,7 @@ class DishRepository(BaseRepository):
 
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные нового блюда.
-        :param submenu_id: Идентификатор подменю, которому относится блюдо.
+        :param submenu_id: Идентификатор под-меню, которому относится блюдо.
         :return: Информация о созданном блюде.
         """
         dish = self.model(

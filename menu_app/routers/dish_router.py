@@ -1,7 +1,7 @@
 """Модуль с роутерами для модели Dish."""
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -25,8 +25,7 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
     response_model=list[Dish]
 )
 async def get_list(
-        menu_id: UUID,
-        submenu_id: UUID,
+        request: Request,
         db: AsyncSession = Depends(get_db)
 ) -> list[Dish]:
     """
@@ -34,11 +33,10 @@ async def get_list(
     качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
-    :param submenu_id: Идентификатор связанного подменю.
-    :param menu_id: Идентификатор связанного меню.
+    :param request: Запрос.
     :return: Список блюд.
     """
-    return await service.get_list(db, submenu_id, menu_id)
+    return await service.get_list(db, request.path_params)
 
 
 @routers.get(
@@ -50,9 +48,8 @@ async def get_list(
     response_model=Dish
 )
 async def get(
+        request: Request,
         dish_id: UUID,
-        menu_id: UUID,
-        submenu_id: UUID,
         db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
@@ -61,11 +58,10 @@ async def get(
 
     :param db: Экземпляром сеанса базы данных.
     :param dish_id: Идентификатор блюда.
-    :param submenu_id: Идентификатор связанного подменю.
-    :param menu_id: Идентификатор связанного меню.
+    :param request: Запрос.
     :return: Информация о блюде с указанным идентификатором.
     """
-    return await service.get(db, dish_id, submenu_id, menu_id)
+    return await service.get(db, dish_id, request.path_params)
 
 
 @routers.post(
@@ -74,7 +70,7 @@ async def get(
     summary='Создаем блюдо',
     description=(
             'Необходимо указать название, описание и цену блюда, а также id '
-            'существующего подменю, к которому будет относиться блюдо. ID '
+            'существующего под-меню, к которому будет относиться блюдо. ID '
             'будет сгенерирован системой. В ответе вернется информация о '
             'созданном экземпляре.'
     ),
@@ -83,21 +79,21 @@ async def get(
     response_model=Dish
 )
 async def create(
+        request: Request,
         submenu_id: UUID,
-        menu_id: UUID,
         data: DishCreate,
         db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
     Функция создает новое блюдо в базе данных с предоставленными данными.
 
-    :param submenu_id: Идентификатор подменю, к которому относится блюдо.
-    :param menu_id: Идентификатор меню, к которому относится блюдо.
+    :param submenu_id: Идентификатор под-меню, к которому относится блюдо.
+    :param request: Запрос.
     :param data: Данные для создания блюда.
     :param db: Экземпляром сеанса базы данных.
     :return: Информация о созданном блюде.
     """
-    return await service.create(db, data, submenu_id, menu_id)
+    return await service.create(db, data, submenu_id, request.path_params)
 
 
 @routers.patch(
@@ -112,7 +108,7 @@ async def create(
     response_model=DishCreate
 )
 async def update(
-        menu_id: UUID,
+        request: Request,
         dish_id: UUID,
         data: DishCreate,
         db: AsyncSession = Depends(get_db)
@@ -121,13 +117,13 @@ async def update(
     Функция обновляет информацию о созданном блюде, передавая информацию через\
     слой service в слой repository, после чего возвращает ответ пользователю.
 
-    :param menu_id: Идентификатор связанного меню.
+    :param request: Запрос.
     :param dish_id: Идентификатор блюда.
     :param data: Обновляемая информация.
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о блюде.
     """
-    return await service.update(db, data, dish_id, menu_id)
+    return await service.update(db, data, dish_id, request.path_params)
 
 
 @routers.delete(
@@ -141,18 +137,16 @@ async def update(
     name='delete_dish'
 )
 async def delete(
+        request: Request,
         dish_id: UUID,
-        menu_id: UUID,
-        submenu_id: UUID,
         db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Dish.
 
     :param dish_id: Идентификатор блюда.
-    :param submenu_id: Идентификатор связанного подменю.
-    :param menu_id: Идентификатор связанного меню.
+    :param request: Запрос.
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, dish_id, submenu_id, menu_id)
+    return await service.delete(db, dish_id, request.path_params)

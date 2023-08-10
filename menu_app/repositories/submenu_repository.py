@@ -23,10 +23,10 @@ class SubmenuRepository(BaseRepository):
 
     async def get_list(self, db: AsyncSession) -> Sequence:
         """
-        Метод получения списка подменю.
+        Метод получения списка под-меню.
 
         :param db: Экземпляром сеанса базы данных.
-        :return: Список подменю.
+        :return: Список под-меню.
         """
         async with db as session:
             query = (
@@ -45,10 +45,10 @@ class SubmenuRepository(BaseRepository):
 
     async def get(self, db: AsyncSession, submenu_id: UUID) -> Row:
         """
-        Метод получения конкретного подменю.
+        Метод получения конкретного под-меню.
 
         :param db: Экземпляром сеанса базы данных.
-        :param submenu_id: Идентификатор подменю.
+        :param submenu_id: Идентификатор под-меню.
         :return: Подменю с указанным идентификатором.
         """
         async with db as session:
@@ -76,12 +76,12 @@ class SubmenuRepository(BaseRepository):
             menu_id: UUID
     ) -> Submenu:
         """
-        Метод создания подменю.
+        Метод создания под-меню.
 
         :param db: Экземпляром сеанса базы данных.
-        :param data: Данные нового подменю.
-        :param menu_id: Идентификатор меню, которому относится подменю.
-        :return: Информация о созданном подменю.
+        :param data: Данные нового под-меню.
+        :param menu_id: Идентификатор меню, которому относится под-меню.
+        :return: Информация о созданном под-меню.
         """
         submenu = self.model(
             id=uuid4(),
@@ -99,12 +99,12 @@ class SubmenuRepository(BaseRepository):
             submenu_id: UUID
     ) -> Submenu:
         """
-        Метод обновления информации о существующем подменю.
+        Метод обновления информации о существующем под-меню.
 
         :param db: Экземпляром сеанса базы данных.
         :param data: Обновляемая информация.
-        :param submenu_id: Идентификатор подменю.
-        :return: Обновленная информация подменю.
+        :param submenu_id: Идентификатор под-меню.
+        :return: Обновленная информация под-меню.
         """
         async with db as session:
             query = (
@@ -120,10 +120,10 @@ class SubmenuRepository(BaseRepository):
 
     async def remove(self, db: AsyncSession, submenu_id: UUID) -> JSONResponse:
         """
-        Метод удаляет подменю из базы данных.
+        Метод удаляет под-меню из базы данных.
 
         :param db: Экземпляром сеанса базы данных.
-        :param submenu_id: Идентификатор подменю.
+        :param submenu_id: Идентификатор под-меню.
         :return: JSONResponse об успехе или неудачи удаления.
         """
         try:
