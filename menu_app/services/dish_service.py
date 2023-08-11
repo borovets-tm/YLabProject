@@ -1,7 +1,9 @@
 """Модуль сервисного слоя для модели Dish."""
 from uuid import UUID
 
+from sqlalchemy import RowMapping, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.dish_repository import DishRepository, repository
@@ -22,7 +24,7 @@ class DishService(BaseService):
             self,
             db: AsyncSession,
             path_params: dict
-    ) -> list[Dish]:
+    ) -> Sequence:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -33,15 +35,13 @@ class DishService(BaseService):
         :return: Список блюд.
         """
         s: dict = await self.get_lazy_s(path_params)
-        result = await self.get_cache(
+        cache = await self.get_cache(
             self.get_list_dish % s
         )
-        if not result:
-            result = await self.repository.get_list(db)
-            await self.set_cache(
-                self.get_list_dish % s,
-                result
-            )
+        if cache:
+            return cache
+        result = await self.repository.get_list(db)
+        await self.set_cache(self.get_list_dish % s, result)
         return result
 
     async def get(
@@ -49,7 +49,7 @@ class DishService(BaseService):
             db: AsyncSession,
             dish_id: UUID,
             path_params: dict
-    ) -> Dish:
+    ) -> RowMapping:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -61,15 +61,11 @@ class DishService(BaseService):
         :return: Экземпляр модели.
         """
         s: dict = await self.get_lazy_s(path_params)
-        result = await self.get_cache(
-            self.get_dish % s
-        )
-        if not result:
-            result = await self.repository.get(db, dish_id)
-            await self.set_cache(
-                self.get_dish % s,
-                result
-            )
+        cache = await self.get_cache(self.get_dish % s)
+        if cache:
+            return cache
+        result = await self.repository.get(db, dish_id)
+        await self.set_cache(self.get_dish % s, result)
         return result
 
     async def create(
@@ -77,7 +73,8 @@ class DishService(BaseService):
             db: AsyncSession,
             data: DishCreate,
             submenu_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> Dish:
         """
         Метод работает с методом создания нового экземпляра блюда, удаляя из\
@@ -88,10 +85,12 @@ class DishService(BaseService):
         :param data: Данные для создания нового экземпляра.
         :param submenu_id: Идентификатор под-меню, к которому относится блюдо.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр созданного блюда.
         """
         s: dict = await self.get_lazy_s(path_params)
-        await self.delete_cache(
+        background_tasks.add_task(
+            self.delete_cache,
             [
                 self.get_list_menu,
                 self.get_menu % s,
@@ -107,7 +106,8 @@ class DishService(BaseService):
             db: AsyncSession,
             data: DishCreate,
             dish_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> Dish:
         """
         Метод удаляет из кэша записи запросов списка блюд и обновляемого блюда.
@@ -116,14 +116,13 @@ class DishService(BaseService):
         :param data: Данные для обновления.
         :param dish_id: Идентификатор блюда.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр блюда с обновленными данными.
         """
         s: dict = await self.get_lazy_s(path_params)
-        await self.delete_cache(
-            [
-                self.get_list_dish % s,
-                self.get_dish % s
-            ]
+        background_tasks.add_task(
+            self.delete_cache,
+            [self.get_list_dish % s, self.get_dish % s]
         )
         return await self.repository.update(db, data, dish_id)
 
@@ -131,16 +130,17 @@ class DishService(BaseService):
             self,
             db: AsyncSession,
             dish_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> JSONResponse:
         """
-        Метод удаляет весь кэш при удалении блюда. Удаление всего кэша\
-        обусловлено тем, что удаление отдельных сегментов увеличит нагрузку\
-        на запрос.
+        Метод удаляет весь кэш при удалении блюда и возвращает ответ \
+        пользователю об успехе или неудачи удаления.
 
         :param db: Экземпляром сеанса базы данных.
         :param dish_id: Идентификатор удаляемого блюда.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Ответ об успехе или неудачи удаления.
         """
         s: dict = await self.get_lazy_s(path_params)
@@ -152,7 +152,7 @@ class DishService(BaseService):
             self.get_list_dish % s
         ]
         delete_list += await self.get_keys_by_patterns(f'*{dish_id}*')
-        await self.delete_cache(delete_list)
+        background_tasks.add_task(self.delete_cache, delete_list)
         result = await self.repository.remove(db, dish_id)
         return result
 

@@ -1,13 +1,14 @@
 """Модуль сервисного слоя для модели Menu."""
 from uuid import UUID
 
+from sqlalchemy import RowMapping, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.menu_repository import MenuRepository, repository
 from menu_app.schemas.menu import Menu, MenuCreate
-
-from .base_service import BaseService
+from menu_app.services.base_service import BaseService
 
 
 class MenuService(BaseService):
@@ -18,7 +19,10 @@ class MenuService(BaseService):
         super().__init__()
         self.repository: MenuRepository = repository
 
-    async def get_list(self, db: AsyncSession) -> list[Menu]:
+    async def get_list(
+            self,
+            db: AsyncSession
+    ) -> Sequence:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -27,10 +31,11 @@ class MenuService(BaseService):
         :param db: Экземпляром сеанса базы данных.
         :return: Список меню.
         """
-        result = await self.get_cache(self.get_list_menu)
-        if not result:
-            result = await self.repository.get_list(db)
-            await self.set_cache(self.get_list_menu, result)
+        cache = await self.get_cache(self.get_list_menu)
+        if cache:
+            return cache
+        result = await self.repository.get_list(db)
+        await self.set_cache(self.get_list_menu, result)
         return result
 
     async def get(
@@ -38,7 +43,7 @@ class MenuService(BaseService):
             db: AsyncSession,
             menu_id: UUID,
             path_params: dict
-    ) -> Menu:
+    ) -> RowMapping:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -50,27 +55,31 @@ class MenuService(BaseService):
         :return: Экземпляр модели.
         """
         s: dict = await self.get_lazy_s(path_params)
-        result = await self.get_cache(
+        cache = await self.get_cache(
             self.get_menu % s
         )
-        if not result:
-            result = await self.repository.get(db, menu_id)
-            await self.set_cache(
-                self.get_menu % s,
-                result
-            )
+        if cache:
+            return cache
+        result = await self.repository.get(db, menu_id)
+        await self.set_cache(self.get_menu % s, result)
         return result
 
-    async def create(self, db: AsyncSession, data: MenuCreate) -> Menu:
+    async def create(
+            self,
+            db: AsyncSession,
+            data: MenuCreate,
+            background_tasks: BackgroundTasks
+    ) -> Menu:
         """
         Метод работает с методом создания нового экземпляра меню, удаляя из\
         кэша записи результатов запроса получения списка меню.
 
         :param db: Экземпляром сеанса базы данных.
         :param data: Данные для создания нового экземпляра.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр созданного меню.
         """
-        await self.delete_cache([self.get_list_menu])
+        background_tasks.add_task(self.delete_cache, [self.get_list_menu])
         return await self.repository.create(db, data)
 
     async def update(
@@ -78,7 +87,8 @@ class MenuService(BaseService):
             db: AsyncSession,
             data: MenuCreate,
             menu_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> Menu:
         """
         Метод удаляет из кэша записи запросов списка меню и обновляемого меню.
@@ -87,30 +97,34 @@ class MenuService(BaseService):
         :param data: Данные для обновления.
         :param menu_id: Идентификатор меню.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр меню с обновленными данными.
         """
         s: dict = await self.get_lazy_s(path_params)
-        await self.delete_cache(
-            [
-                self.get_list_menu,
-                self.get_menu % s
-            ]
+        background_tasks.add_task(
+            self.delete_cache,
+            [self.get_list_menu, self.get_menu % s]
         )
         return await self.repository.update(db, data, menu_id)
 
-    async def delete(self, db: AsyncSession, menu_id: UUID) -> JSONResponse:
+    async def delete(
+            self,
+            db: AsyncSession,
+            menu_id: UUID,
+            background_tasks: BackgroundTasks
+    ) -> JSONResponse:
         """
-        Метод удаляет весь кэш при удалении меню. Удаление всего кэша\
-        обусловлено тем, что удаление отдельных сегментов увеличит нагрузку\
-        на запрос.
+        Метод удаляет кэш при удалении меню и возвращает ответ пользователю \
+        об успехе или неудачи удаления.
 
         :param db: Экземпляром сеанса базы данных.
         :param menu_id: Идентификатор удаляемого меню.
+        :param background_tasks: Фоновые задачи.
         :return: Ответ об успехе или неудачи удаления.
         """
         delete_list = [self.get_list_menu]
         delete_list += await self.get_keys_by_patterns(f'*{menu_id}*')
-        await self.delete_cache(delete_list)
+        background_tasks.add_task(self.delete_cache, delete_list)
         result = await self.repository.remove(db, menu_id)
         return result
 

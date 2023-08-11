@@ -1,7 +1,9 @@
 """Модуль сервисного слоя для модели Submenu."""
 from uuid import UUID
 
+from sqlalchemy import RowMapping, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.submenu_repository import SubmenuRepository, repository
@@ -21,7 +23,7 @@ class SubmenuService(BaseService):
     async def get_list(
             self,
             db: AsyncSession, path_params: dict
-    ) -> list[Submenu]:
+    ) -> Sequence:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -32,10 +34,11 @@ class SubmenuService(BaseService):
         :return: Список под-меню.
         """
         s: dict = await self.get_lazy_s(path_params)
-        result = await self.get_cache(self.get_list_submenu % s)
-        if not result:
-            result = await self.repository.get_list(db)
-            await self.set_cache(self.get_list_submenu % s, result)
+        cache = await self.get_cache(self.get_list_submenu % s)
+        if cache:
+            return cache
+        result = await self.repository.get_list(db)
+        await self.set_cache(self.get_list_submenu % s, result)
         return result
 
     async def get(
@@ -43,7 +46,7 @@ class SubmenuService(BaseService):
             db: AsyncSession,
             submenu_id: UUID,
             path_params: dict
-    ) -> Submenu:
+    ) -> RowMapping:
         """
         Метод проверяет наличие кэша запроса. При положительном результате\
         возвращает полученный кэш, в противном случае получает результат\
@@ -56,10 +59,11 @@ class SubmenuService(BaseService):
         :return: Экземпляр модели.
         """
         s: dict = await self.get_lazy_s(path_params)
-        result = await self.get_cache(self.get_submenu % s)
-        if not result:
-            result = await self.repository.get(db, submenu_id)
-            await self.set_cache(self.get_submenu % s, result)
+        cache = await self.get_cache(self.get_submenu % s)
+        if cache:
+            return cache
+        result = await self.repository.get(db, submenu_id)
+        await self.set_cache(self.get_submenu % s, result)
         return result
 
     async def create(
@@ -67,7 +71,8 @@ class SubmenuService(BaseService):
             db: AsyncSession,
             data: SubmenuCreate,
             menu_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> Submenu:
         """
         Метод работает с методом создания нового экземпляра под-меню, удаляя из\
@@ -78,15 +83,13 @@ class SubmenuService(BaseService):
         :param data: Данные для создания нового экземпляра.
         :param menu_id: Идентификатор меню, к которому относится под-меню.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр созданного под-меню.
         """
         s: dict = await self.get_lazy_s(path_params)
-        await self.delete_cache(
-            [
-                self.get_list_menu,
-                self.get_menu % s,
-                self.get_list_submenu % s,
-            ]
+        background_tasks.add_task(
+            self.delete_cache,
+            [self.get_list_menu, self.get_menu % s, self.get_list_submenu % s]
         )
         return await self.repository.create(db, data, menu_id)
 
@@ -95,7 +98,8 @@ class SubmenuService(BaseService):
             db: AsyncSession,
             data: SubmenuCreate,
             submenu_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> Submenu:
         """
         Метод удаляет из кэша записи запросов списка под-меню и обновляемого\
@@ -105,14 +109,13 @@ class SubmenuService(BaseService):
         :param data: Данные для обновления.
         :param submenu_id: Идентификатор под-меню.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Экземпляр под-меню с обновленными данными.
         """
         s: dict = await self.get_lazy_s(path_params)
-        await self.delete_cache(
-            [
-                self.get_list_submenu % s,
-                self.get_submenu % s
-            ]
+        background_tasks.add_task(
+            self.delete_cache,
+            [self.get_list_submenu % s, self.get_submenu % s]
         )
         return await self.repository.update(db, data, submenu_id)
 
@@ -120,16 +123,17 @@ class SubmenuService(BaseService):
             self,
             db: AsyncSession,
             submenu_id: UUID,
-            path_params: dict
+            path_params: dict,
+            background_tasks: BackgroundTasks
     ) -> JSONResponse:
         """
-        Метод удаляет весь кэш при удалении под-меню. Удаление всего кэша\
-        обусловлено тем, что удаление отдельных сегментов увеличит нагрузку\
-        на запрос.
+        Метод удаляет кэш при удалении под-меню и возвращает ответ \
+        пользователю об успехе или неудачи удаления.
 
         :param db: Экземпляром сеанса базы данных.
         :param submenu_id: Идентификатор удаляемого под-меню.
         :param path_params: Словарь со списком параметров пути.
+        :param background_tasks: Фоновые задачи.
         :return: Ответ об успехе или неудачи удаления.
         """
         s: dict = await self.get_lazy_s(path_params)
@@ -140,7 +144,7 @@ class SubmenuService(BaseService):
             self.get_submenu % s
         ]
         delete_list += await self.get_keys_by_patterns(f'*{submenu_id}*')
-        await self.delete_cache(delete_list)
+        background_tasks.add_task(self.delete_cache, delete_list)
         return await self.repository.remove(db, submenu_id)
 
 

@@ -1,3 +1,4 @@
+"""Модуль хранит базовые переменные для работы приложения."""
 from abc import ABC
 from os import getenv
 
@@ -7,6 +8,8 @@ load_dotenv()
 
 
 class Config(ABC):
+    """Переменные полученные из env файла для работы приложения."""
+
     POSTGRES_USER: str | None = getenv('POSTGRES_USER', 'default')
     POSTGRES_PASSWORD: str | None = getenv('POSTGRES_PASSWORD')
     PORT: str | None = getenv('PORT')

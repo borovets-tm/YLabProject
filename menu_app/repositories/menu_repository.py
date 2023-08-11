@@ -2,7 +2,7 @@
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import Row, Sequence, delete, func, select
+from sqlalchemy import RowMapping, Sequence, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import coalesce
 from starlette.responses import JSONResponse
@@ -27,37 +27,36 @@ class MenuRepository(BaseRepository):
         :param db: Экземпляром сеанса базы данных.
         :return: Список меню.
         """
-        async with db as session:
-            subquery = (
-                select(
-                    Submenu.menu_id,
-                    Submenu.id.label('submenu_id'),
-                    func.count(Submenu.dishes).label('dishes_count')
-                )
-                .outerjoin(Submenu.dishes)
-                .group_by(Submenu.menu_id, Submenu.id)
-                .subquery('subquery')
+        subquery = (
+            select(
+                Submenu.menu_id,
+                Submenu.id.label('submenu_id'),
+                func.count(Submenu.dishes).label('dishes_count')
             )
-            query = (
-                select(
-                    self.model.id,
-                    self.model.title,
-                    self.model.description,
-                    func.count(subquery.c.submenu_id).label('submenus_count'),
-                    func.sum(
-                        coalesce(subquery.c.dishes_count, 0)
-                    ).label('dishes_count')
-                )
-                .outerjoin(
-                    subquery, self.model.id == subquery.c.menu_id
-                )
-                .group_by(self.model.id)
+            .outerjoin(Submenu.dishes)
+            .group_by(Submenu.id)
+            .subquery('subquery')
+        )
+        query = (
+            select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                func.count(subquery.c.submenu_id).label('submenus_count'),
+                func.sum(
+                    coalesce(subquery.c.dishes_count, 0)
+                ).label('dishes_count')
             )
-            result = await session.execute(query)
-            curr = result.all()
+            .outerjoin(
+                subquery, self.model.id == subquery.c.menu_id
+            )
+            .group_by(self.model.id)
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().all()
         return curr
 
-    async def get(self, db: AsyncSession, menu_id: UUID) -> Row:
+    async def get(self, db: AsyncSession, menu_id: UUID) -> RowMapping:
         """
         Метод получения конкретного меню.
 
@@ -65,39 +64,38 @@ class MenuRepository(BaseRepository):
         :param menu_id: Идентификатор меню.
         :return: Меню с указанным идентификатором.
         """
-        async with db as session:
-            subquery = (
-                select(
-                    Submenu.menu_id,
-                    Submenu.id.label('submenu_id'),
-                    func.count(Submenu.dishes).label('dishes_count')
-                )
-                .outerjoin(Submenu.dishes)
-                .filter(Submenu.menu_id == menu_id)
-                .group_by(Submenu.menu_id, Submenu.id)
-                .subquery('subquery')
+        subquery = (
+            select(
+                Submenu.menu_id,
+                Submenu.id.label('submenu_id'),
+                func.count(Submenu.dishes).label('dishes_count')
             )
-            query = (
-                select(
-                    self.model.id,
-                    self.model.title,
-                    self.model.description,
-                    func.count(subquery.c.submenu_id).label('submenus_count'),
-                    func.sum(
-                        coalesce(subquery.c.dishes_count, 0)
-                    ).label('dishes_count')
-                )
-                .outerjoin(
-                    subquery, self.model.id == subquery.c.menu_id
-                )
-                .filter(self.model.id == menu_id)
-                .group_by(self.model.id)
+            .outerjoin(Submenu.dishes)
+            .filter(Submenu.menu_id == menu_id)
+            .group_by(Submenu.menu_id, Submenu.id)
+            .subquery('subquery')
+        )
+        query = (
+            select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                func.count(subquery.c.submenu_id).label('submenus_count'),
+                func.sum(
+                    coalesce(subquery.c.dishes_count, 0)
+                ).label('dishes_count')
             )
-            result = await session.execute(query)
-            curr = result.first()
-        if not curr:
-            raise HTTPException(status_code=404, detail='menu not found')
-        return curr
+            .outerjoin(
+                subquery, self.model.id == subquery.c.menu_id
+            )
+            .filter(self.model.id == menu_id)
+            .group_by(self.model.id)
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().first()
+        if curr:
+            return curr
+        raise HTTPException(status_code=404, detail='menu not found')
 
     async def create(self, db: AsyncSession, data: MenuCreate) -> Menu:
         """
@@ -129,16 +127,15 @@ class MenuRepository(BaseRepository):
         :param menu_id: Идентификатор меню.
         :return: Обновленная информация о меню.
         """
-        async with db as session:
-            query = (
-                select(self.model)
-                .filter(self.model.id == menu_id)
-            )
-            result = await session.execute(query)
-            menu = result.scalars().one()
-            menu.title = data.title
-            menu.description = data.description
-            await self.data_commit(db, menu)
+        query = (
+            select(self.model)
+            .filter(self.model.id == menu_id)
+        )
+        result = await db.stream(query)
+        menu = await result.scalars().first()
+        menu.title = data.title
+        menu.description = data.description
+        await self.data_commit(db, menu)
         return menu
 
     async def remove(
@@ -155,9 +152,8 @@ class MenuRepository(BaseRepository):
         """
         try:
             query = delete(self.model).filter(self.model.id == menu_id)
-            async with db as session:
-                await session.execute(query)
-                await session.commit()
+            await db.stream(query)
+            await db.commit()
             return JSONResponse(
                 status_code=200,
                 content={

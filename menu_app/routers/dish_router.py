@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
@@ -82,6 +83,7 @@ async def create(
         request: Request,
         submenu_id: UUID,
         data: DishCreate,
+        background_tasks: BackgroundTasks,
         db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
@@ -90,10 +92,11 @@ async def create(
     :param submenu_id: Идентификатор под-меню, к которому относится блюдо.
     :param request: Запрос.
     :param data: Данные для создания блюда.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Информация о созданном блюде.
     """
-    return await service.create(db, data, submenu_id, request.path_params)
+    return await service.create(db, data, submenu_id, request.path_params, background_tasks)
 
 
 @routers.patch(
@@ -111,6 +114,7 @@ async def update(
         request: Request,
         dish_id: UUID,
         data: DishCreate,
+        background_tasks: BackgroundTasks,
         db: AsyncSession = Depends(get_db)
 ) -> Dish:
     """
@@ -120,10 +124,11 @@ async def update(
     :param request: Запрос.
     :param dish_id: Идентификатор блюда.
     :param data: Обновляемая информация.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о блюде.
     """
-    return await service.update(db, data, dish_id, request.path_params)
+    return await service.update(db, data, dish_id, request.path_params, background_tasks)
 
 
 @routers.delete(
@@ -139,6 +144,7 @@ async def update(
 async def delete(
         request: Request,
         dish_id: UUID,
+        background_tasks: BackgroundTasks,
         db: AsyncSession = Depends(get_db)
 ) -> JSONResponse:
     """
@@ -146,7 +152,8 @@ async def delete(
 
     :param dish_id: Идентификатор блюда.
     :param request: Запрос.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, dish_id, request.path_params)
+    return await service.delete(db, dish_id, request.path_params, background_tasks)

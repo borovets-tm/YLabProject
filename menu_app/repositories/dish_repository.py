@@ -2,7 +2,7 @@
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import Row, Sequence, delete, select
+from sqlalchemy import RowMapping, Sequence, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -26,18 +26,17 @@ class DishRepository(BaseRepository):
         :param db: Экземпляром сеанса базы данных.
         :return: Список блюд.
         """
-        async with db as session:
-            query = select(
-                self.model.id,
-                self.model.title,
-                self.model.description,
-                self.model.price
-            )
-            result = await session.execute(query)
-            curr = result.all()
+        query = select(
+            self.model.id,
+            self.model.title,
+            self.model.description,
+            self.model.price
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().all()
         return curr
 
-    async def get(self, db: AsyncSession, dish_id: UUID) -> Row:
+    async def get(self, db: AsyncSession, dish_id: UUID) -> RowMapping:
         """
         Метод получения конкретного блюда.
 
@@ -45,21 +44,20 @@ class DishRepository(BaseRepository):
         :param dish_id: идентификатор блюда.
         :return: Блюдо с указанным идентификатором.
         """
-        async with db as session:
-            query = (
-                select(
-                    self.model.id,
-                    self.model.title,
-                    self.model.description,
-                    self.model.price
-                )
-                .filter(self.model.id == dish_id)
+        query = (
+            select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                self.model.price
             )
-            result = await session.execute(query)
-            curr = result.first()
-        if not curr:
-            raise HTTPException(status_code=404, detail='dish not found')
-        return curr
+            .filter(self.model.id == dish_id)
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().first()
+        if curr:
+            return curr
+        raise HTTPException(status_code=404, detail='dish not found')
 
     async def create(
             self,
@@ -99,17 +97,16 @@ class DishRepository(BaseRepository):
         :param dish_id: Идентификатор блюда.
         :return: Обновленная информация о блюде.
         """
-        async with db as session:
-            query = (
-                select(self.model)
-                .filter(self.model.id == dish_id)
-            )
-            result = await session.execute(query)
-            dish = result.scalars().one()
-            dish.title = data.title
-            dish.description = data.description
-            dish.price = data.price
-            await self.data_commit(db, dish)
+        query = (
+            select(self.model)
+            .filter(self.model.id == dish_id)
+        )
+        result = await db.stream(query)
+        dish = await result.scalars().first()
+        dish.title = data.title
+        dish.description = data.description
+        dish.price = data.price
+        await self.data_commit(db, dish)
         return dish
 
     async def remove(self, db: AsyncSession, dish_id: UUID) -> JSONResponse:
@@ -122,9 +119,8 @@ class DishRepository(BaseRepository):
         """
         try:
             query = delete(self.model).filter(self.model.id == dish_id)
-            async with db as session:
-                await session.execute(query)
-                await session.commit()
+            await db.stream(query)
+            await db.commit()
             return JSONResponse(
                 status_code=200,
                 content={

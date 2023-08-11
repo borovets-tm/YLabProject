@@ -3,7 +3,7 @@ CRUD."""
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import Row, Sequence, delete, func, select
+from sqlalchemy import RowMapping, Sequence, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -28,22 +28,21 @@ class SubmenuRepository(BaseRepository):
         :param db: Экземпляром сеанса базы данных.
         :return: Список под-меню.
         """
-        async with db as session:
-            query = (
-                select(
-                    self.model.id,
-                    self.model.title,
-                    self.model.description,
-                    func.count(self.model.dishes).label('dishes_count')
-                )
-                .outerjoin(self.model.dishes)
-                .group_by(self.model.id)
+        query = (
+            select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                func.count(self.model.dishes).label('dishes_count')
             )
-            result = await session.execute(query)
-            curr = result.all()
+            .outerjoin(self.model.dishes)
+            .group_by(self.model.id)
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().all()
         return curr
 
-    async def get(self, db: AsyncSession, submenu_id: UUID) -> Row:
+    async def get(self, db: AsyncSession, submenu_id: UUID) -> RowMapping:
         """
         Метод получения конкретного под-меню.
 
@@ -51,23 +50,22 @@ class SubmenuRepository(BaseRepository):
         :param submenu_id: Идентификатор под-меню.
         :return: Подменю с указанным идентификатором.
         """
-        async with db as session:
-            query = (
-                select(
-                    self.model.id,
-                    self.model.title,
-                    self.model.description,
-                    func.count(self.model.dishes).label('dishes_count')
-                )
-                .outerjoin(self.model.dishes)
-                .filter(self.model.id == submenu_id)
-                .group_by(self.model.id)
+        query = (
+            select(
+                self.model.id,
+                self.model.title,
+                self.model.description,
+                func.count(self.model.dishes).label('dishes_count')
             )
-            result = await session.execute(query)
-            curr = result.first()
-        if not curr:
-            raise HTTPException(status_code=404, detail='submenu not found')
-        return curr
+            .outerjoin(self.model.dishes)
+            .filter(self.model.id == submenu_id)
+            .group_by(self.model.id)
+        )
+        result = await db.stream(query)
+        curr = await result.mappings().first()
+        if curr:
+            return curr
+        raise HTTPException(status_code=404, detail='submenu not found')
 
     async def create(
             self,
@@ -106,16 +104,15 @@ class SubmenuRepository(BaseRepository):
         :param submenu_id: Идентификатор под-меню.
         :return: Обновленная информация под-меню.
         """
-        async with db as session:
-            query = (
-                select(self.model)
-                .filter(self.model.id == submenu_id)
-            )
-            result = await session.execute(query)
-            submenu = result.scalars().one()
-            submenu.title = data.title
-            submenu.description = data.description
-            await self.data_commit(db, submenu)
+        query = (
+            select(self.model)
+            .filter(self.model.id == submenu_id)
+        )
+        result = await db.stream(query)
+        submenu = await result.scalars().first()
+        submenu.title = data.title
+        submenu.description = data.description
+        await self.data_commit(db, submenu)
         return submenu
 
     async def remove(self, db: AsyncSession, submenu_id: UUID) -> JSONResponse:
@@ -128,9 +125,8 @@ class SubmenuRepository(BaseRepository):
         """
         try:
             query = delete(self.model).filter(self.model.id == submenu_id)
-            async with db as session:
-                await session.execute(query)
-                await session.commit()
+            await db.stream(query)
+            await db.commit()
             return JSONResponse(
                 status_code=200,
                 content={

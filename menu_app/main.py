@@ -1,8 +1,9 @@
 """Модуль запуска приложения."""
 from fastapi import APIRouter, FastAPI
 
-from .routers import dish_router, menu_router, submenu_router
-from .services.base_service import BaseService
+from menu_app.routers import app_router, dish_router, menu_router, submenu_router
+from menu_app.services.app_service import service
+from menu_app.services.base_service import BaseService
 
 app: FastAPI = FastAPI(
     title='Menu API',
@@ -13,8 +14,14 @@ router: APIRouter = APIRouter(prefix='/api/v1')
 
 submenu_router.routers.include_router(dish_router.routers)
 menu_router.routers.include_router(submenu_router.routers)
-router.include_router(menu_router.routers)
+app_router.routers.include_router(menu_router.routers)
+router.include_router(app_router.routers)
 app.include_router(router)
+
+
+@app.on_event('startup')
+async def test():
+    await service.update_db_from_excel()
 
 
 @app.on_event('shutdown')

@@ -98,7 +98,7 @@
 ***
 ## Запуск тестов приложения
 1. Для запуска тестов используйте инструкцию "Процедура развертывания с помощью
-Docker", заменив пункт 6 из на команду ниже:
+Docker", заменив пункт 6 на команду ниже:
     ```shell
     docker-compose -f test.docker-compose.yaml up --attach test --abort-on-container-exit && docker-compose -f test.docker-compose.yaml down
     ```

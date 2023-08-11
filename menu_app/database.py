@@ -1,3 +1,4 @@
+"""Модуль инициализации базы данных и сеанса работы с БД."""
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -5,6 +6,12 @@ from menu_app.config import config
 
 
 def get_connection_string(driver: str = 'asyncpg') -> str:
+    """
+    Функция получает данные из конфигурационного файла и возвращает адрес БД.
+
+    :param driver: Используемый драйвер работы с БД.
+    :return: Строка с адресом БД.
+    """
     sqlalchemy_url: str = (
         f'postgresql+{driver}://{config.POSTGRES_USER}:'
         f'{config.POSTGRES_PASSWORD}@{config.HOST_DB}:'
@@ -18,6 +25,12 @@ async_engine = create_async_engine(get_connection_string())
 
 
 async def get_db():
+    """
+    Функция инициализирует сеанса базы данных и возвращает его в виде \
+    генератора, пока приложение работает.
+
+    :return: Экземпляр сеанса базы данных.
+    """
     async_session = sessionmaker(
         expire_on_commit=False,
         autocommit=False,

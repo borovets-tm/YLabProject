@@ -14,6 +14,7 @@ class BaseService:
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
         self.url_redis = f'redis://{config.REDIS_HOST}'
         self.cache_lifetime = 60 * 10
+        self.full_menu = 'get_tree_menu'
         self.get_list_menu = 'get_list.menu'
         self.get_menu = 'get.menu.%(menu_id)s'
         self.get_list_submenu = self.get_list_menu + '.%(menu_id)s.submenu'
@@ -23,6 +24,12 @@ class BaseService:
 
     @classmethod
     async def get_lazy_s(cls, path_params: dict) -> dict:
+        """
+        Метод собирает словарь из аргументов ленивой строки.
+
+        :param path_params: Параметры пути, адреса запроса.
+        :return: словарь с аргументами.
+        """
         s = {
             'menu_id': path_params.get('menu_id', ''),
             'submenu_id': path_params.get('submenu_id', ''),
@@ -67,6 +74,12 @@ class BaseService:
             await redis.delete(*request)
 
     async def get_keys_by_patterns(self, pattern: str) -> list:
+        """
+        Метод получает список всех ключей кэша, хранящихся в Redis по подстроке.
+
+        :param pattern: Подстрока для поиска.
+        :return: Список всех найденных ключей.
+        """
         async with aioredis.from_url(self.url_redis) as redis:
             return await redis.keys(pattern)
 

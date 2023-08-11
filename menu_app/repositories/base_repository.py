@@ -17,14 +17,13 @@ class BaseRepository:
         :param entity_model: Любая из моделей приложения.
         :return: None.
         """
-        async with db as session:
-            try:
-                session.add(entity_model)
-                await session.commit()
-                await session.refresh(entity_model)
-            except SQLAlchemyError as e:
-                error = str(e.__cause__)
-                await session.rollback()
-                raise RuntimeError(error) from e
-            finally:
-                await session.close()
+        try:
+            db.add(entity_model)
+            await db.commit()
+            await db.refresh(entity_model)
+        except SQLAlchemyError as e:
+            error = str(e.__cause__)
+            await db.rollback()
+            raise RuntimeError(error) from e
+        finally:
+            await db.close()

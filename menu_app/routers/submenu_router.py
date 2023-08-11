@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
@@ -82,6 +83,7 @@ async def create(
         request: Request,
         menu_id: UUID,
         data: SubmenuCreate,
+        background_tasks: BackgroundTasks,
         db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
@@ -90,10 +92,17 @@ async def create(
     :param request: Запрос.
     :param menu_id: Идентификатор меню, к которому относится под-меню.
     :param data: Данные для создания под-меню.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Информация о созданном под-меню.
     """
-    return await service.create(db, data, menu_id, request.path_params)
+    return await service.create(
+        db,
+        data,
+        menu_id,
+        request.path_params,
+        background_tasks
+    )
 
 
 @routers.patch(
@@ -111,6 +120,7 @@ async def update(
         request: Request,
         data: SubmenuCreate,
         submenu_id: UUID,
+        background_tasks: BackgroundTasks,
         db: AsyncSession = Depends(get_db)
 ) -> Submenu:
     """
@@ -121,10 +131,17 @@ async def update(
     :param request: Запрос.
     :param submenu_id: Идентификатор под-меню.
     :param data: Обновляемая информация.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о под-меню.
     """
-    return await service.update(db, data, submenu_id, request.path_params)
+    return await service.update(
+        db,
+        data,
+        submenu_id,
+        request.path_params,
+        background_tasks
+    )
 
 
 @routers.delete(
@@ -140,14 +157,21 @@ async def update(
 async def delete(
         request: Request,
         submenu_id: UUID,
-        db: AsyncSession = Depends(get_db)
+        background_tasks: BackgroundTasks,
+        db: AsyncSession = Depends(get_db),
 ) -> JSONResponse:
     """
     Функция удаляет экземпляр модели Submenu.
 
     :param submenu_id: Идентификатор под-меню.
     :param request: Запрос.
+    :param background_tasks: Фоновые задачи.
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, submenu_id, request.path_params)
+    return await service.delete(
+        db,
+        submenu_id,
+        request.path_params,
+        background_tasks
+    )
