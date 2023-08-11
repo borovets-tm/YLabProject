@@ -7,7 +7,7 @@ from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.menu_repository import MenuRepository, repository
-from menu_app.schemas.menu import Menu, MenuCreate
+from menu_app.schemas.menu_schemas import Menu, MenuCreate
 from menu_app.services.base_service import BaseService
 
 

@@ -7,9 +7,8 @@ from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.submenu_repository import SubmenuRepository, repository
-from menu_app.schemas.submenu import Submenu, SubmenuCreate
-
-from .base_service import BaseService
+from menu_app.schemas.submenu_schemas import Submenu, SubmenuCreate
+from menu_app.services.base_service import BaseService
 
 
 class SubmenuService(BaseService):
@@ -75,8 +74,8 @@ class SubmenuService(BaseService):
             background_tasks: BackgroundTasks
     ) -> Submenu:
         """
-        Метод работает с методом создания нового экземпляра под-меню, удаляя из\
-        кэша записи результатов запросов: получения списков меню, под-меню;\
+        Метод работает с методом создания нового экземпляра под-меню, удаляя \
+        из кэша записи результатов запросов: получения списков меню, под-меню;\
         информации о меню, связанного с под-меню.
 
         :param db: Экземпляром сеанса базы данных.

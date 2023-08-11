@@ -8,9 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.models import Submenu
-from menu_app.schemas.submenu import SubmenuCreate
-
-from .base_repository import BaseRepository
+from menu_app.repositories.base_repository import BaseRepository
+from menu_app.schemas.submenu_schemas import SubmenuCreate
 
 
 class SubmenuRepository(BaseRepository):

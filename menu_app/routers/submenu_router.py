@@ -1,13 +1,14 @@
-"""Модуль с роутерами для модели Submenu."""
+"""Модуль с роутером для модели Submenu."""
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
+from sqlalchemy import RowMapping, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.submenu import Submenu, SubmenuCreate
+from menu_app.schemas.submenu_schemas import Submenu, SubmenuCreate
 from menu_app.services.submenu_service import service
 
 routers = APIRouter(prefix='/{menu_id}/submenus')
@@ -28,10 +29,10 @@ routers = APIRouter(prefix='/{menu_id}/submenus')
 async def get_list(
         request: Request,
         db: AsyncSession = Depends(get_db)
-) -> list[Submenu]:
+) -> Sequence:
     """
-    Функция получает из слоя service информацию о списке под-меню и передает ее\
-    в качестве ответа на get-запрос.
+    Функция получает из слоя service информацию о списке под-меню и передает \
+    ее в качестве ответа на get-запрос.
 
     :param db: Экземпляром сеанса базы данных.
     :param request: Запрос.
@@ -52,7 +53,7 @@ async def get(
         request: Request,
         submenu_id: UUID,
         db: AsyncSession = Depends(get_db)
-) -> Submenu:
+) -> RowMapping:
     """
     Функция получает из слоя service информацию о конкретном под-меню и\
     передает ее качестве ответа на get-запрос.
@@ -70,9 +71,9 @@ async def get(
     summary='Создаем под-меню',
     description=(
             'Необходимо указать название и описание под-меню, а также id '
-            'существующего меню, к которому будет относиться под-меню. ID будет'
-            ' сгенерирован системой. В ответе вернется информация о созданном '
-            'экземпляре.'
+            'существующего меню, к которому будет относиться под-меню. ID '
+            'будет сгенерирован системой. В ответе вернется информация о '
+            'созданном экземпляре.'
     ),
     tags=['submenus'],
     name='create_submenu',

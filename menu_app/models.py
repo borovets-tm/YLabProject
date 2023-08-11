@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import UUID, Column, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, relationship
 
-from .database import Base
+from menu_app.database import Base
 
 
 class Menu(Base):

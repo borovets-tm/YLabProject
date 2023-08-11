@@ -7,9 +7,8 @@ from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.repositories.dish_repository import DishRepository, repository
-from menu_app.schemas.dish import Dish, DishCreate
-
-from .base_service import BaseService
+from menu_app.schemas.dish_schemas import Dish, DishCreate
+from menu_app.services.base_service import BaseService
 
 
 class DishService(BaseService):

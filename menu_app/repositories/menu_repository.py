@@ -8,9 +8,8 @@ from sqlalchemy.sql.functions import coalesce
 from starlette.responses import JSONResponse
 
 from menu_app.models import Menu, Submenu
-from menu_app.schemas.menu import MenuCreate
-
-from .base_repository import BaseRepository
+from menu_app.repositories.base_repository import BaseRepository
+from menu_app.schemas.menu_schemas import MenuCreate
 
 
 class MenuRepository(BaseRepository):

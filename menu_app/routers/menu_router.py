@@ -8,7 +8,7 @@ from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.menu import Menu, MenuCreate
+from menu_app.schemas.menu_schemas import Menu, MenuCreate
 from menu_app.services.menu_service import service
 
 routers = APIRouter(prefix='/menus')

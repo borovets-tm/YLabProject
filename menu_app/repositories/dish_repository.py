@@ -7,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
 from menu_app.models import Dish
-from menu_app.schemas.dish import DishCreate
-
-from .base_repository import BaseRepository
+from menu_app.repositories.base_repository import BaseRepository
+from menu_app.schemas.dish_schemas import DishCreate
 
 
 class DishRepository(BaseRepository):

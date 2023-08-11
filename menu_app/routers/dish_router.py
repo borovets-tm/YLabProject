@@ -1,13 +1,14 @@
-"""Модуль с роутерами для модели Dish."""
+"""Модуль с роутером для модели Dish."""
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
+from sqlalchemy import RowMapping, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTasks
 from starlette.responses import JSONResponse
 
 from menu_app.database import get_db
-from menu_app.schemas.dish import Dish, DishCreate
+from menu_app.schemas.dish_schemas import Dish, DishCreate
 from menu_app.services.dish_service import service
 
 routers = APIRouter(prefix='/{submenu_id}/dishes')
@@ -28,7 +29,7 @@ routers = APIRouter(prefix='/{submenu_id}/dishes')
 async def get_list(
         request: Request,
         db: AsyncSession = Depends(get_db)
-) -> list[Dish]:
+) -> Sequence:
     """
     Функция получает из слоя service информацию о списке блюд и передает ее в\
     качестве ответа на get-запрос.
@@ -52,7 +53,7 @@ async def get(
         request: Request,
         dish_id: UUID,
         db: AsyncSession = Depends(get_db)
-) -> Dish:
+) -> RowMapping:
     """
     Функция получает из слоя service информацию о конкретном блюде и передает\
     ее качестве ответа на get-запрос.
@@ -96,7 +97,13 @@ async def create(
     :param db: Экземпляром сеанса базы данных.
     :return: Информация о созданном блюде.
     """
-    return await service.create(db, data, submenu_id, request.path_params, background_tasks)
+    return await service.create(
+        db,
+        data,
+        submenu_id,
+        request.path_params,
+        background_tasks
+    )
 
 
 @routers.patch(
@@ -128,7 +135,13 @@ async def update(
     :param db: Экземпляром сеанса базы данных.
     :return: Обновленная информация о блюде.
     """
-    return await service.update(db, data, dish_id, request.path_params, background_tasks)
+    return await service.update(
+        db,
+        data,
+        dish_id,
+        request.path_params,
+        background_tasks
+    )
 
 
 @routers.delete(
@@ -156,4 +169,9 @@ async def delete(
     :param db: Экземпляром сеанса базы данных.
     :return: Ответ об успехе или неудачи удаления.
     """
-    return await service.delete(db, dish_id, request.path_params, background_tasks)
+    return await service.delete(
+        db,
+        dish_id,
+        request.path_params,
+        background_tasks
+    )

@@ -75,7 +75,8 @@ class BaseService:
 
     async def get_keys_by_patterns(self, pattern: str) -> list:
         """
-        Метод получает список всех ключей кэша, хранящихся в Redis по подстроке.
+        Метод получает список всех ключей кэша, хранящихся в Redis по \
+        подстроке.
 
         :param pattern: Подстрока для поиска.
         :return: Список всех найденных ключей.
