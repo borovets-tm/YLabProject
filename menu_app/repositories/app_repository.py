@@ -54,19 +54,3 @@ async def get_tree_menu_repository(db: AsyncSession) -> Sequence:
     result = await db.stream(query)
     curr = await result.mappings().all()
     return curr
-
-
-async def merge_objects(
-        db: AsyncSession,
-        obj_list: list[Menu | Submenu | Dish]
-) -> None:
-    """
-    Функция добавляет записи в БД, а если запись существует, обновит данные.
-
-    :param db: Экземпляр сеанса базы данных.
-    :param obj_list: Список объектов для добавления в БД.
-    :return: None
-    """
-    for obj in obj_list:
-        await db.merge(obj)
-    await db.commit()

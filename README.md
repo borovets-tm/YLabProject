@@ -54,6 +54,8 @@
     POSTGRES_PASSWORD=<пароль>
     POSTGRES_DB=<название БД>
     TEST_DB=<название тестовой БД>
+    RABBITMQ_DEFAULT_USER=<имя пользователя для MQRabbit>
+    RABBITMQ_DEFAULT_PASS=<пароль для MQRabbit>
     ```
 11. Замените значение `HOST_DB`, `TEST_HOST_DB` и `REDIS_HOST` на `localhost`
 #### Параметры указываются из расчета, что PostgreSQL установлен на локальной машине в противном случае используйте собственные параметры для подключения!
@@ -64,6 +66,7 @@
      ```shell
     uvicorn menu_app.main:app --reload
     ```
+
 ***
 ### Процедура развертывания с помощью Docker:
 1. Скопируйте репозиторий на свою машину:
@@ -88,6 +91,8 @@
    POSTGRES_PASSWORD=<пароль>
    POSTGRES_DB=<название БД>
    TEST_DB=<название тестовой БД>
+   RABBITMQ_DEFAULT_USER=<имя пользователя для MQRabbit>
+   RABBITMQ_DEFAULT_PASS=<пароль для MQRabbit>
    ```
 6. Запустите сборку образа и запуск контейнера Docker:
     ```shell

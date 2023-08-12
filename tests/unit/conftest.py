@@ -14,7 +14,7 @@ def get_connection_string(driver: str = 'asyncpg') -> str:
     return (
         f'postgresql+{driver}://{config.POSTGRES_USER}:'
         f'{config.POSTGRES_PASSWORD}@{config.TEST_HOST_DB}:'
-        f'{config.PORT}/{config.TEST_DB}'
+        f'{config.POSTGRES_PORT}/{config.TEST_DB}'
     )
 
 

@@ -12,7 +12,7 @@ class BaseService:
 
     def __init__(self):
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
-        self.url_redis = f'redis://{config.REDIS_HOST}'
+        self.url_redis = config.url_redis
         self.cache_lifetime = 60 * 10
         self.full_menu = 'get_tree_menu'
         self.get_list_menu = 'get_list.menu'
