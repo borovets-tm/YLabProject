@@ -1,91 +1,37 @@
 # YLab_University
 ***
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![FastAPI](https://a11ybadges.com/badge?logo=fastapi)
+![Python](https://a11ybadges.com/badge?logo=python)
+![PostgreSQL](https://a11ybadges.com/badge?logo=postgresql)
+![Docker](https://a11ybadges.com/badge?logo=docker)
+![Redis](https://a11ybadges.com/badge?logo=redis)
+![RabbitMQ](https://a11ybadges.com/badge?logo=rabbitmq)
+![Celery](https://a11ybadges.com/badge?logo=celery)
 ## Menu APP
 
 > Backend: Боровец Тимофей
 > Version: 1.0.0
 > Date: 07/2023
-
-### Процедура развертывания и запуска локального приложения:
-1. Скопируйте репозиторий на свою машину:
-    ```shell
-   git clone https://github.com/sonic-tim/YLabProject.git
-    ```
-2. Перейдите в папку проекта:
-    ```shell
-   cd YLabProject
-    ```
-3. Установите виртуальное окружение:
-    ```shell
-    python -m venv venv
-    ```
-4. Активируйте виртуальное окружение:
-    ```shell
-    source venv/bin/activate
-    ```
-5. Установите pip если они еще не установлен:
-    ```shell
-    python -m pip install --upgrade pip
-    ```
-6. Установите poetry:
-    ```shell
-    pip install poetry
-    ```
-7. Установите зависимости:
-    ```shell
-    poetry install
-    ```
-8. Скопируйте содержимое файла `.env.template` в `.env`:
-    ```shell
-    cp .env.template .env
-    ```
-9. Откройте созданный файл `.env`:
-    ```shell
-    nano .env
-    ```
-10. Задайте значение для незаполненных параметров:
-     ```
-    POSTGRES_USER=<имя пользователя>
-    POSTGRES_PASSWORD=<пароль>
-    POSTGRES_DB=<название БД>
-    TEST_DB=<название тестовой БД>
-    RABBITMQ_DEFAULT_USER=<имя пользователя для MQRabbit>
-    RABBITMQ_DEFAULT_PASS=<пароль для MQRabbit>
-    ```
-11. Замените значение `HOST_DB`, `TEST_HOST_DB` и `REDIS_HOST` на `localhost`
-#### Параметры указываются из расчета, что PostgreSQL установлен на локальной машине в противном случае используйте собственные параметры для подключения!
-12. Сохраните и закройте файл сочетанием клавиш в следующем порядке:
-     * **CTRL+O** *(подтвердите сохранение клавишей Enter)*
-     * **CTRL+X**
-13. Запустите приложение:
-     ```shell
-    uvicorn menu_app.main:app --reload
-    ```
-
 ***
-### Процедура развертывания с помощью Docker:
-1. Скопируйте репозиторий на свою машину:
+### Приложение разворачивается с помощью Docker по следующей схеме:
+1. Установите Docker на Вашу машину по инструкции из [Docker docs](https://docs.docker.com/desktop/)
+2. Скопируйте репозиторий на свою машину:
     ```shell
     git clone https://github.com/sonic-tim/YLabProject.git
     ```
-2. Перейдите в папку проекта:
+3. Перейдите в папку проекта:
     ```shell
     cd YLabProject
     ```
-3. Скопируйте содержимое файла `.env.template` в `.env`:
+4. Скопируйте содержимое файла `.env.template` в `.env`:
     ```shell
    cp .env.template .env
    ```
-4. Откройте созданный файл `.env`:
+5. Откройте созданный файл `.env`:
     ```shell
    nano .env
    ```
-5. Задайте значение для незаполненных параметров:
+6. Задайте значение для незаполненных параметров:
     ```
    POSTGRES_USER=<имя пользователя>
    POSTGRES_PASSWORD=<пароль>
@@ -94,22 +40,59 @@
    RABBITMQ_DEFAULT_USER=<имя пользователя для MQRabbit>
    RABBITMQ_DEFAULT_PASS=<пароль для MQRabbit>
    ```
-6. Запустите сборку образа и запуск контейнера Docker:
+7. Запустите сборку образа и запуск контейнера Docker:
     ```shell
    docker-compose up -d
    ```
-
+***
+> **ВНИМАНИЕ!** Тесты из Postman могут не проходить, если в Базе данных есть
+> записи. Для прохождения тестов Postman переместите документ Menu.xlsx из
+> папки admin приложения в любое другое место. После тестирования верните файл
+> обратно.
+***
 #### После данных манипуляций приложение будет доступно по адресу [localhost:8000](http://localhost:8000/docs) или [127.0.0.1:8000](http://127.0.0.1:8000/docs)
+***
+> **ВНИМАНИЕ!** Фоновая задача по обновлению данных из excel таблицы запустится
+> не раньше, чем через 15 секунд после запуска контейнеров! Это связано с механизмом
+> запуска RabbitMQ.
 ***
 ## Запуск тестов приложения
 1. Для запуска тестов используйте инструкцию "Процедура развертывания с помощью
 Docker", заменив пункт 6 на команду ниже:
+    > **ВНИМАНИЕ!** Если до тестирования производилось развертывание основного
+   > приложения, то достаточно только ввести данную команду.
+
     ```shell
     docker-compose -f test.docker-compose.yaml up --attach test --abort-on-container-exit && docker-compose -f test.docker-compose.yaml down
     ```
-    > При выполнении данной команды, будет запущен тестовый сценарий, который
-    > развернет и запустит pytest, выведет в консоль информацию о результатах
-    > тестов, после чего остановит и удалит контейнеры.
+   > При выполнении данной команды, будет запущен тестовый сценарий, который
+   > развернет и запустит pytest, выведет в консоль информацию о результатах
+   > тестов, после чего остановит и удалит контейнеры.
+#### Список тестов
+* `tests/unit/test_app.py` - тестирование получения древовидного меню.
+* `tests/unit/test_count_from_postman.py` - тестирование количества меню/подменю/блюд из Postman.
+* `tests/unit/test_crud_dish.py` - тестирование CRUD для Блюд.
+* `tests/unit/test_crud_menu.py` - тестирование CRUD для Меню.
+* `tests/unit/test_crud_submenu.py` - тестирование CRUD Под-меню.
+* `tests/unit/test_healthcheck.py` - завершение тестов(удаление БД и кэша).
 
-**Если перед запуском тестов выполнялось развертывание приложения с помощью
-Docker, то для запуска теста достаточно выполнить команду запуска.**
+***
+## Ключевые моменты
+* Тесты написаны только для "ручек".
+* Фоновая задача обновляет данные меню каждые 15 секунд. На текущий момент
+   время жизни кэша составляет также 15 секунд.
+* **ВАЖНО!** В файле Menu.xlsx разделителем дробной части цен является точка.
+
+## Реализации со звездочкой
+* Реализовать вывод количества подменю и блюд для Меню через один (сложный) ORM запрос.
+   > Данная реализация расположена в menu_app.repositories.menu_repository.MenuRepository.get_list
+* Реализовать тестовый сценарий «Проверка кол-ва блюд и подменю в меню» из Postman с помощью pytest
+   > Данная реализация расположена в tests/unit/test_count_from_postman.py
+* Описать ручки API в соответствий c OpenAPI
+   > Данная реализация расположена в menu_app/routers
+* Реализовать в тестах аналог Django reverse() для FastAPI
+   > Данная реализация расположена в tests.unit.config_test.config_base.TestReverseClient.reverse
+* Обновление меню из google sheets раз в 15 сек.
+    > В процессе реализации.
+* Блюда по акции. Размер скидки (%) указывается в столбце G файла Menu.xlsx
+    > В процессе реализации.

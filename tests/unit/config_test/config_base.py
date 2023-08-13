@@ -41,7 +41,7 @@ class BaseTest:
     description_submenu: str = 'Description test submenu 1'
     title_dish: str = 'Test dish 1'
     description_dish: str = 'Description test dish 1'
-    price_dish: str = '12.50'
+    price_dish: str = '12.53'
 
     def __init__(self):
         self.reverse = TestReverseClient()
@@ -53,7 +53,7 @@ class BaseTest:
         )
         self.update_title_dish = 'Updated test dish 1'
         self.update_description_dish = 'Updated description test dish 1'
-        self.update_price_dish = '14.50'
+        self.update_price_dish = '14.59'
         self.submenus_count = 0
         self.dishes_count = 0
 

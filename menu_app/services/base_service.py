@@ -13,7 +13,7 @@ class BaseService:
     def __init__(self):
         """Инициализация базовых значений адреса redis и времени жизни кэша."""
         self.url_redis = config.url_redis
-        self.cache_lifetime = 60 * 10
+        self.cache_lifetime = 15
         self.full_menu = 'get_tree_menu'
         self.get_list_menu = 'get_list.menu'
         self.get_menu = 'get.menu.%(menu_id)s'
@@ -92,3 +92,4 @@ class BaseService:
         """
         async with aioredis.from_url(self.url_redis) as redis:
             await redis.flushdb(asynchronous=True)
+            await redis.connection_pool.disconnect()

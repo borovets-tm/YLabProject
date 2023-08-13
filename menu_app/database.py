@@ -22,8 +22,6 @@ async def get_db():
         bind=async_engine,
         class_=AsyncSession,
     )
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
     async with async_session() as session:
         await session.begin()

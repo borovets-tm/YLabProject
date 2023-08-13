@@ -1,6 +1,7 @@
 import pytest
 
 from menu_app.database import Base
+from menu_app.services.base_service import BaseService
 
 from .conftest import async_engine
 
@@ -10,3 +11,4 @@ from .conftest import async_engine
 async def test_drop_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await BaseService().flush_redis()

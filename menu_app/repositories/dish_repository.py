@@ -2,7 +2,7 @@
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException
-from sqlalchemy import RowMapping, Sequence, delete, select
+from sqlalchemy import RowMapping, Sequence, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -29,7 +29,7 @@ class DishRepository(BaseRepository):
             self.model.id,
             self.model.title,
             self.model.description,
-            self.model.price
+            func.round(self.model.current_price, 2).label('price')
         )
         result = await db.stream(query)
         curr = await result.mappings().all()
@@ -48,7 +48,7 @@ class DishRepository(BaseRepository):
                 self.model.id,
                 self.model.title,
                 self.model.description,
-                self.model.price
+                func.round(self.model.current_price, 2).label('price')
             )
             .filter(self.model.id == dish_id)
         )
@@ -77,6 +77,7 @@ class DishRepository(BaseRepository):
             title=data.title,
             description=data.description,
             price=data.price,
+            discount=0,
             submenu_id=submenu_id
         )
         await self.data_commit(db, dish)

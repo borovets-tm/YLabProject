@@ -17,8 +17,8 @@ services:
       - "5432:5432"
     restart: always
   rabbitmq:
-    image: rabbitmq
-    container_name: rabbit
+    image: rabbitmq:3.12.2-management-alpine
+    container_name: rabbitmq
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
@@ -26,39 +26,13 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  beat:
-    build:
-      context: .
-    container_name: beat
-    depends_on:
-      - rabbitmq
-    command:
-      - celery
-      - "--app=menu_app.worker:celery"
-      - beat
-      - -l
-      - INFO
-    restart: always
-  celery:
-    build:
-      context: .
-    container_name: celery
-    depends_on:
-      - rabbitmq
-    command:
-      - celery
-      - "--app=menu_app.worker:celery"
-      - worker
-      - -l
-      - INFO
-    restart: always
   app:
     build:
       dockerfile: ./Dockerfile
     container_name: app
-    depends_on:
-      - db
-      - redis
+    external_links:
+      - db:db
+      - redis:redis
     ports:
       - "8000:8000"
     env_file:
@@ -71,4 +45,43 @@ services:
       - --port
       - "8000"
       - --reload
+    volumes:
+      - ./menu_app/admin:/app/menu_app/admin
     restart: always
+  beat:
+    build:
+      context: .
+    container_name: beat
+    env_file:
+      - .env
+    external_links:
+      - rabbitmq:rabbitmq
+      - app:app
+    command:
+      - celery
+      - --app=menu_app.worker:celery
+      - beat
+      - -l
+      - INFO
+    restart: always
+    volumes:
+      - ./menu_app/admin:/app/menu_app/admin
+  celery:
+    build:
+      context: .
+    container_name: celery
+    env_file:
+      - .env
+    external_links:
+      - rabbitmq:rabbitmq
+      - app:app
+      - beat:beat
+    command:
+      - celery
+      - --app=menu_app.worker:celery
+      - worker
+      - -l
+      - INFO
+    restart: always
+    volumes:
+      - ./menu_app/admin:/app/menu_app/admin

@@ -24,7 +24,7 @@ async def get_tree_menu_repository(db: AsyncSession) -> Sequence:
                     'id', Dish.id,
                     'title', Dish.title,
                     'description', Dish.description,
-                    'price', Dish.price
+                    'price', func.round(Dish.current_price, 2)
                 )
             ).label('dishes')
         )

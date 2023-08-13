@@ -6,7 +6,7 @@ from .config_test.config_dish import BaseTestDish
 
 @pytest.mark.order(3)
 @pytest.mark.asyncio
-class TestCRUDSubmenu:
+class TestCRUDDish:
     base = BaseTestDish()
 
     async def test_create_menu(self) -> None:

@@ -21,6 +21,7 @@ class Config(ABC):
     REDIS_HOST: str | None = getenv('REDIS_HOST')
     RABBITMQ_DEFAULT_USER: str | None = getenv('RABBITMQ_DEFAULT_USER')
     RABBITMQ_DEFAULT_PASS: str | None = getenv('RABBITMQ_DEFAULT_PASS')
+    RABBITMQ_HOST: str | None = getenv('RABBITMQ_HOST')
     BASE_DIR = Path(__file__).resolve().parent.parent
     async_sqlalchemy_url: str = (
         f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@'
@@ -32,7 +33,7 @@ class Config(ABC):
     )
     broker_url = (
         f'pyamqp://{RABBITMQ_DEFAULT_USER}:{RABBITMQ_DEFAULT_PASS}'
-        f'@localhost//'
+        f'@{RABBITMQ_HOST}//'
     )
     url_redis = f'redis://{REDIS_HOST}'
 

@@ -1,4 +1,4 @@
-from .config_submenu import BaseTestSubmenu
+from tests.unit.config_test.config_submenu import BaseTestSubmenu
 
 
 class BaseTestDish(BaseTestSubmenu):

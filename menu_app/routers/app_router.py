@@ -5,6 +5,7 @@ from sqlalchemy import Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from menu_app.database import get_db
+from menu_app.schemas.app_schemas import AppBase
 from menu_app.services.app_service import service
 
 routers = APIRouter(prefix='')
@@ -19,7 +20,7 @@ routers = APIRouter(prefix='')
     ),
     tags=['app'],
     name='full_menu',
-    response_model=None,
+    response_model=list[AppBase]
 )
 async def get_tree_menu(db: AsyncSession = Depends(get_db)) -> Sequence:
     """

@@ -2,7 +2,8 @@
 import decimal
 import uuid
 
-from sqlalchemy import UUID, Column, ForeignKey, Numeric, String
+from sqlalchemy import UUID, Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
 
 from menu_app.database import Base
@@ -88,6 +89,11 @@ class Dish(Base):
     price: Mapped[decimal.Decimal] = Column(
         Numeric(10, 2)
     )
+    discount: Mapped[int] = Column(
+        Integer,
+        nullable=True,
+        default=0
+    )
     submenu_id: Mapped[uuid.UUID] = Column(
         UUID,
         ForeignKey('submenus.id', ondelete='CASCADE'),
@@ -96,3 +102,9 @@ class Dish(Base):
         'Submenu',
         back_populates='dishes'
     )
+
+    @hybrid_property
+    def current_price(self) -> decimal.Decimal:
+        if self.discount:
+            return self.price - (self.price * self.discount / 100)
+        return self.price
