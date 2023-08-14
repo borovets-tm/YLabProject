@@ -7,8 +7,8 @@ WORKDIR /app
 
 RUN pip install --upgrade pip poetry
 RUN poetry config virtualenvs.create false --local
-COPY pyproject.toml ./
-COPY poetry.lock ./
+COPY pyproject.toml .
+COPY poetry.lock .
 RUN poetry install
 
 COPY . .

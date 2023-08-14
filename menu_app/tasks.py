@@ -18,7 +18,7 @@ fields_dish = (
     'price',
     'discount'
 )
-wb = load_workbook(config.BASE_DIR / 'menu_app/admin/Menu.xlsx')
+wb = load_workbook(config.BASE_DIR / 'admin/Menu.xlsx')
 
 
 @celery.task
