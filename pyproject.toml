@@ -26,6 +26,7 @@ celery = "^5.3.1"
 flower = "^2.0.0"
 openpyxl = "^3.1.2"
 pyamqp = "^0.1.0.7"
+types-requests = "^2.31.0.2"
 
 
 [build-system]
