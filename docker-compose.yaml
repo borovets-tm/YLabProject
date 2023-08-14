@@ -4,6 +4,8 @@ services:
   redis:
     image: redis
     container_name: redis
+    networks:
+      - ylabnetwork
     env_file:
       - .env
     ports:
@@ -11,6 +13,8 @@ services:
   db:
     image: postgres:15.1-alpine
     container_name: db
+    networks:
+      - ylabnetwork
     env_file:
       - .env
     ports:
@@ -19,6 +23,8 @@ services:
   rabbitmq:
     image: rabbitmq:3.12.2-management-alpine
     container_name: rabbitmq
+    networks:
+      - ylabnetwork
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
@@ -30,9 +36,15 @@ services:
     build:
       dockerfile: ./Dockerfile
     container_name: app
-    external_links:
-      - "db:db"
-      - "redis:redis"
+    networks:
+      - ylabnetwork
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - type: bind
+        source: ./admin
+        target: /app/admin
     ports:
       - "8000:8000"
     env_file:
@@ -45,18 +57,22 @@ services:
       - --port
       - "8000"
       - --reload
-    volumes:
-      - ${PWD}/admin:/app/menu_app/admin
     restart: always
   celery:
     build:
       context: .
     container_name: celery
+    networks:
+      - ylabnetwork
     env_file:
       - .env
-    external_links:
-      - "rabbitmq:rabbitmq"
-      - "app:app"
+    volumes:
+      - type: bind
+        source: ./admin
+        target: /app/admin
+    depends_on:
+      - rabbitmq
+      - app
     command:
       - celery
       - --app=menu_app.worker:celery
@@ -65,5 +81,6 @@ services:
       - -l
       - INFO
     restart: always
-    volumes:
-      - ${PWD}/admin:/app/menu_app/admin
+
+networks:
+  ylabnetwork:

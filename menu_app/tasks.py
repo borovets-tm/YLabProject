@@ -20,10 +20,12 @@ fields_dish = (
 )
 
 
+def _get_file():
+    return load_workbook(config.BASE_DIR / 'admin/Menu.xlsx')
+
+
 @celery.task
-def update_db_from_excel(
-        wb: Workbook = load_workbook(config.BASE_DIR / 'admin/Menu.xlsx')
-) -> None:
+def update_db_from_excel() -> None:
     """
     Функция обновляет данные в базе из excel файла в фоновом режиме каждые 15\
      секунд.
@@ -31,6 +33,7 @@ def update_db_from_excel(
     :return: None.
     """
     try:
+        wb: Workbook = _get_file()
         sheet = wb.active
         data_list: list = []
         id_dict: dict = {

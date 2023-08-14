@@ -102,7 +102,3 @@ Docker", заменив пункт 6 на команду ниже:
   > * menu_app.models.Dish.current_price - модель;
   > * menu_app.repositories.dish_repository.DishRepository.get_list - пример запроса
   > * menu_app.tasks.update_db_from_excel - обработчик
-***
-> ВАЖНО! По непонятной пока причине, изменение файла из системы пока не отражается
-> на файле в Docker контейнере. Поиск решения проблемы продолжается. На текущий момент
-> решением является перезапуск контейнеров.
