@@ -20,18 +20,6 @@ services:
     ports:
       - "5432:5432"
     restart: always
-  rabbitmq:
-    image: rabbitmq:3.12.2-management-alpine
-    container_name: rabbitmq
-    networks:
-      - ylabnetwork
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    ports:
-      - "5672:5672"
-      - "15672:15672"
   app:
     build:
       dockerfile: ./Dockerfile
@@ -58,6 +46,18 @@ services:
       - "8000"
       - --reload
     restart: always
+  rabbitmq:
+    image: rabbitmq:3.12.2-management-alpine
+    container_name: rabbitmq
+    networks:
+      - ylabnetwork
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
   celery:
     build:
       context: .

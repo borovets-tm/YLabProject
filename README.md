@@ -1,4 +1,5 @@
 # YLab_University
+> **"Simple is better than complex."** (*The Zen of Python by Tim Peters*)
 ***
 ![FastAPI](https://a11ybadges.com/badge?logo=fastapi)
 ![Python](https://a11ybadges.com/badge?logo=python)
