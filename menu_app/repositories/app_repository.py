@@ -26,7 +26,7 @@ async def get_tree_menu_repository(db: AsyncSession) -> Sequence:
                     'description', Dish.description,
                     'price', func.round(Dish.current_price, 2)
                 )
-            ).label('dishes')
+            ).filter(Dish.id.is_not(None)).label('dishes')
         )
         .outerjoin(Dish, Submenu.id == Dish.submenu_id)
         .group_by(Submenu.id)
@@ -44,7 +44,7 @@ async def get_tree_menu_repository(db: AsyncSession) -> Sequence:
                     'description', subquery.c.description,
                     'dishes', subquery.c.dishes
                 )
-            ).label('submenus')
+            ).filter(subquery.c.id.is_not(None)).label('submenus')
         )
         .outerjoin(
             subquery, Menu.id == subquery.c.menu_id

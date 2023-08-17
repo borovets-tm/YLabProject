@@ -15,7 +15,7 @@ class SubmenuTree(BaseModel):
     id: UUID4
     title: str
     description: str
-    dishes: list[DishTree]
+    dishes: list[DishTree] | None
 
 
 class AppBase(BaseModel):
@@ -24,4 +24,4 @@ class AppBase(BaseModel):
     id: UUID4
     title: str
     description: str
-    submenus: list[SubmenuTree]
+    submenus: list[SubmenuTree] | None
