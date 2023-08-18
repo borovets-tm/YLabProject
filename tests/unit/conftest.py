@@ -1,32 +1,35 @@
+"""Модуль инициализации тестов, в котором производятся предварительные \
+настройки для работы pytest."""
 import asyncio
+from typing import AsyncGenerator, Generator
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, declarative_base, sessionmaker
 
 from menu_app.config import config
 from menu_app.database import Base, get_db
 from menu_app.main import app
 
-
-def get_connection_string(driver: str = 'asyncpg') -> str:
-    return (
-        f'postgresql+{driver}://{config.POSTGRES_USER}:'
-        f'{config.POSTGRES_PASSWORD}@{config.TEST_HOST_DB}:'
-        f'{config.POSTGRES_PORT}/{config.TEST_DB}'
-    )
-
-
-async_engine = create_async_engine(
-    url=get_connection_string(),
+test_sqlalchemy_url: str = (
+    f'postgresql+asyncpg://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@'
+    f'{config.TEST_HOST_DB}:{config.POSTGRES_PORT}/{config.TEST_DB}'
 )
+async_engine: AsyncEngine = create_async_engine(
+    url=test_sqlalchemy_url,
+)
+OverrideBase: DeclarativeBase = declarative_base()
 
-OverrideBase = declarative_base()
 
+async def override_get_db() -> AsyncGenerator:
+    """
+    Функция генерирует экземпляр сеанса базы данных, а также создает таблицы \
+    в базе данных при первом обращении.
 
-async def override_get_db():
-    async_session = sessionmaker(
+    :return: Генератор экземпляра сеанса базы данных.
+    """
+    async_session: sessionmaker = sessionmaker(
         expire_on_commit=False,
         autocommit=False,
         autoflush=False,
@@ -47,11 +50,22 @@ async def override_get_db():
 
 @pytest.fixture(scope='session')
 async def async_client() -> AsyncClient:
+    """
+    Функция создает тестового клиента на уровне фикстур для дальнейшего \
+    использования в тестах.
+
+    :return: Асинхронный тестовый клиент.
+    """
     return AsyncClient(app=app, base_url='http://localhost')
 
 
 @pytest.fixture(scope='session')
-def event_loop():
+def event_loop() -> Generator:
+    """
+    Функция генерирует loop для тестов на уровне фикстур.
+
+    :return: Генератор асинхронного loop.
+    """
     policy = asyncio.get_event_loop_policy()
     loop = policy.new_event_loop()
     yield loop

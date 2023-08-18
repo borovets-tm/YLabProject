@@ -1,9 +1,12 @@
+"""Модуль дополнительной конфигурации тестов CRUD для модели Submenu."""
 from .config_menu import BaseTestMenu
 
 
 class BaseTestSubmenu(BaseTestMenu):
+    """Класс тонкого конфигурирования тестов для сущностей модели Submenu."""
 
     def __init__(self):
+        """Инициализация контрольных значений."""
         super().__init__()
         self.check_data_submenu = {
             'id': self.submenu_id,
@@ -21,6 +24,11 @@ class BaseTestSubmenu(BaseTestMenu):
         self.not_found_submenu = {'detail': 'submenu not found'}
 
     async def submenu_test_create(self):
+        """
+        Метод создания тестового под-меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         test_entity = {
             'title': self.title_submenu,
             'description': self.description_submenu
@@ -36,12 +44,23 @@ class BaseTestSubmenu(BaseTestMenu):
         return response
 
     async def submenu_test_get_list(self):
+        """
+        Метод запроса списка под-меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.retrieve_test(
             'get_list_submenu',
             menu_id=self.menu_id
         )
 
     async def submenu_test_get(self):
+        """
+        Метод запроса конкретного под-меню по идентификатору, используемый в \
+        тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.retrieve_test(
             'get_submenu',
             menu_id=self.menu_id,
@@ -49,6 +68,11 @@ class BaseTestSubmenu(BaseTestMenu):
         )
 
     async def submenu_test_update(self):
+        """
+        Метод обновления под-меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         test_update_entity = {
             'title': self.update_title_submenu,
             'description': self.update_description_submenu
@@ -61,6 +85,11 @@ class BaseTestSubmenu(BaseTestMenu):
         )
 
     async def submenu_test_delete(self):
+        """
+        Метод удаления под-меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.delete_test(
             'delete_submenu',
             menu_id=self.menu_id,

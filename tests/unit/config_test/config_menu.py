@@ -1,11 +1,14 @@
+"""Модуль дополнительной конфигурации тестов CRUD для модели Menu."""
 from httpx import Response
 
 from .config_base import BaseTest
 
 
 class BaseTestMenu(BaseTest):
+    """Класс тонкого конфигурирования тестов для сущностей модели Menu."""
 
     def __init__(self):
+        """Инициализация контрольных значений."""
         super().__init__()
         self.check_data_menu = {
             'id': None,
@@ -22,6 +25,11 @@ class BaseTestMenu(BaseTest):
         self.not_found_menu = {'detail': 'menu not found'}
 
     async def menu_test_create(self) -> Response:
+        """
+        Метод создания тестового меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         test_entity = {
             'title': self.title_menu,
             'description': self.description_menu
@@ -33,12 +41,28 @@ class BaseTestMenu(BaseTest):
         return response
 
     async def menu_test_get_list(self) -> Response:
+        """
+        Метод запроса списка меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.retrieve_test('get_list_menu')
 
     async def menu_test_get(self) -> Response:
+        """
+        Метод запроса конкретного меню по идентификатору, используемый в \
+        тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.retrieve_test('get_menu', menu_id=self.menu_id)
 
     async def menu_test_update(self) -> Response:
+        """
+        Метод обновления меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         test_update_entity = {
             'title': self.update_title_menu,
             'description': self.update_description_menu
@@ -50,4 +74,9 @@ class BaseTestMenu(BaseTest):
         )
 
     async def menu_test_delete(self) -> Response:
+        """
+        Метод удаления меню, используемый в тестах для проверки.
+
+        :return: Ответ на запрос.
+        """
         return await self.delete_test('delete_menu', menu_id=self.menu_id)
